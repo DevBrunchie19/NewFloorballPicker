@@ -9,7 +9,7 @@
 /* --- Base Styles --- */
 body {
   font-family: Arial, sans-serif;
-  max-width: 600px;
+  max-width: 650px;
   margin: 40px auto;
   padding: 20px;
   background: #f9f9f9;
@@ -30,6 +30,21 @@ textarea, input {
   border-radius: 6px;
   border: 1px solid #ccc;
 }
+button {
+  margin-top: 14px;
+  width: 100%;
+  padding: 12px;
+  font-size: 1.1rem;
+  background: #3a52a3;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+button:hover {
+  background: #2b3a7d;
+}
+
 .chips-container {
   display: flex;
   flex-wrap: wrap;
@@ -54,7 +69,7 @@ textarea, input {
   border: 1px solid #ddd;
   padding: 14px;
   border-radius: 10px;
-  margin-top: 12px;
+  margin-top: 16px;
 }
 
 .team-title {
@@ -84,7 +99,7 @@ textarea, input {
   justify-content: space-between;
 }
 
-.player-block, .row-center {
+.player-block {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -101,6 +116,23 @@ textarea, input {
   margin-top: 6px;
   font-weight: 600;
 }
+
+/* --- Substitute Section --- */
+.subs-section {
+  min-width: 150px;
+  background: #fafafa;
+  border-radius: 10px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  height: fit-content;
+}
+
+.sub-card {
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #fff;
+}
 </style>
 </head>
 
@@ -108,10 +140,10 @@ textarea, input {
 <h1>Floorball Team Picker</h1>
 
 <!-- Player Chips -->
-<div class="chips-header"><strong>The usual suspects:</strong></div>
+<div><strong>The usual suspects:</strong></div>
 <div id="playerChips" class="chips-container"></div>
 
-<div class="chips-header"><strong>Goalies:</strong></div>
+<div><strong>Goalies:</strong></div>
 <div id="goalieChips" class="chips-container"></div>
 
 <label>Enter additional players (comma separated):</label>
@@ -221,7 +253,7 @@ function generateTeams() {
     teams.push(players.splice(0, teamSize));
   }
 
-  // Distribute leftover players
+  // Distribute extras (if any)
   let idx = 0;
   while (players.length) {
     teams[idx % numTeams].push(players.shift());
@@ -240,7 +272,7 @@ function generateTeams() {
 }
 
 /* -----------------------------
-   Formation Rendering
+   Formation Rendering + Subs
 -------------------------------- */
 function renderTeams(teams, size) {
   const teamNames = [
@@ -258,31 +290,49 @@ function renderTeams(teams, size) {
   teams.forEach((team, i) => {
     let name = teamNames[i % teamNames.length];
 
-    // Find goalie
+    // Extract goalie
     const goalieIndex = team.findIndex(p => p.includes("(G)"));
     let goalie = null;
-
     if (goalieIndex >= 0) {
       goalie = team.splice(goalieIndex, 1)[0];
     }
 
-    const [p1, p2, p3] = team; // 3 remaining
+    // Main 3 players for formation
+    const mainPlayers = team.slice(0, 3);
+
+    // Substitutes = any players beyond those 3
+    const substitutes = team.slice(3);
 
     const goalieTop = i % 2 === 0;
 
     let html = `<div class="team"><div class="team-title">${name}</div>`;
-    html += `<div class="formation-layout">`;
 
-    // TOP
-    html += centeredRow(goalieTop ? goalie : p1);
+    html += `
+      <div style="display:flex; gap:20px; justify-content:center;">
+        
+        <!-- Formation section -->
+        <div class="formation-layout">
+          ${centeredRow(goalieTop ? goalie : mainPlayers[0])}
+          ${twoAcrossRow(mainPlayers[0], mainPlayers[1])}
+          ${centeredRow(!goalieTop ? goalie : mainPlayers[2])}
+        </div>
 
-    // MIDDLE
-    html += twoAcrossRow(p1, p2);
+        <!-- Substitutes section -->
+        <div class="subs-section">
+          <div style="font-weight:bold; text-align:center; margin-bottom:8px;">
+            Substitutes
+          </div>
 
-    // BOTTOM
-    html += centeredRow(!goalieTop ? goalie : p3);
+          ${substitutes.length === 0 ? `
+            <div style="text-align:center;">None</div>
+          ` : substitutes.map(p => `
+            <div class="sub-card">${formatPlayer(p)}</div>
+          `).join("")}
+        </div>
+      </div>
+    `;
 
-    html += `</div></div>`;
+    html += `</div>`;
     output.innerHTML += html;
   });
 }
