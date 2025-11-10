@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<title>Floorball Team Picker — Fixed</title>
+<title>Floorball Team Picker — Fixed Final</title>
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <style>
 /* --- Base Styles --- */
@@ -21,7 +21,7 @@ button { margin-top:14px; width:100%; padding:12px; font-size:1.1rem; background
 button:hover { background:#2b3a7d; }
 
 .chips-container { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
-.chip { padding:8px 14px; background:#e0e0e0; border-radius:20px; cursor:pointer; transition:0.2s; }
+.chip { padding:8px 14px; background:#e0e0e0; border-radius:20px; cursor:pointer; transition:0.2s; user-select:none; }
 .chip.selected { background:#3a52a3; color:white; }
 
 /* --- Team Card --- */
@@ -82,33 +82,38 @@ const goalies = ["Colin D", "Sam", "ClothGimp"];
 document.addEventListener("DOMContentLoaded", () => {
   createChips(commonPlayers, "playerChips", togglePlayer);
   createChips(goalies, "goalieChips", toggleGoalie);
+  // initialize team size selected UI if desired
 });
 
 /* -----------------------------
    Utilities
 -------------------------------- */
 function shuffle(arr) {
-  for (let i=arr.length-1; i>0; i--){
-    const j = Math.floor(Math.random()*(i+1));
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
     [arr[i], arr[j]] = [arr[j], arr[i]];
   }
 }
 
 /* normalize a name: trim, collapse multiple spaces */
-function normalizeName(n){
-  return n.replace(/\s+/g,' ').trim();
+function normalizeName(n) {
+  return n.replace(/\s+/g, ' ').trim();
 }
 
-/* dedupe array of strings (case-insensitive, but preserve original casing of first occurrence) */
-function dedupeNames(arr){
-  const seen = new Map();
+/* dedupe preserving first-seen order (case-insensitive key) */
+function dedupePreserveOrder(arr) {
+  const seen = new Set();
+  const out = [];
   for (const raw of arr) {
+    if (!raw) continue;
     const name = normalizeName(raw);
-    if (!name) continue;
     const key = name.toLowerCase();
-    if (!seen.has(key)) seen.set(key, name);
+    if (!seen.has(key)) {
+      seen.add(key);
+      out.push(name);
+    }
   }
-  return Array.from(seen.values());
+  return out;
 }
 
 /* -----------------------------
@@ -116,7 +121,7 @@ function dedupeNames(arr){
 -------------------------------- */
 function createChips(list, containerId, handler) {
   const container = document.getElementById(containerId);
-  container.innerHTML = ""; // ensure no duplicates if called again
+  container.innerHTML = ""; // clear
   list.forEach(name => {
     const chip = document.createElement("div");
     chip.className = "chip";
@@ -128,7 +133,8 @@ function createChips(list, containerId, handler) {
 
 function togglePlayer(name, chip) {
   chip.classList.toggle("selected");
-  syncTextareaFromChips();
+  // update textarea to reflect combined canonical list
+  updateTextareaFromSelection();
 }
 
 function toggleGoalie(name, chip) {
@@ -136,54 +142,75 @@ function toggleGoalie(name, chip) {
 }
 
 /* -----------------------------
-   Input parsing + selection helpers
+   Selection & parsing
 -------------------------------- */
-/* Parse textarea, normalise, dedupe */
-function getPlayersFromTextarea(){
-  const raw = document.getElementById("names").value;
-  if (!raw) return [];
+/* Get selected players from chips in the order they appear in the chip container */
+function getSelectedPlayersFromChips() {
+  return Array.from(document.querySelectorAll("#playerChips .chip.selected"))
+    .map(c => normalizeName(c.textContent));
+}
+
+/* Parse textarea players (commas), normalize and dedupe */
+function getPlayersFromTextarea() {
+  const raw = document.getElementById("names").value || "";
+  if (!raw.trim()) return [];
   const parts = raw.split(",").map(s => normalizeName(s)).filter(Boolean);
-  return dedupeNames(parts);
+  return dedupePreserveOrder(parts);
 }
 
-/* Get selected goalies (normalized) */
-function getSelectedGoalies(){
-  return Array.from(document.querySelectorAll("#goalieChips .chip.selected"))
-    .map(c => normalizeName(c.textContent));
+/* Build final player pool:
+   - start with selected chips (preserve chip order)
+   - then append names typed into textarea that are not already included
+*/
+function buildFinalPlayerPool() {
+  const selectedChips = getSelectedPlayersFromChips(); // preserves chip order
+  const typed = getPlayersFromTextarea();
+  // merge: start with chip-selected, then append typed that aren't already present (case-insensitive)
+  const seen = new Set(selectedChips.map(p => p.toLowerCase()));
+  const merged = [...selectedChips];
+  for (const t of typed) {
+    if (!seen.has(t.toLowerCase())) {
+      merged.push(t);
+      seen.add(t.toLowerCase());
+    }
+  }
+  // final dedupe defense (should be redundant)
+  return dedupePreserveOrder(merged);
 }
 
-/* When chips toggle, sync textarea (keeps textarea deduped too) */
-function syncTextareaFromChips(){
-  const selected = Array.from(document.querySelectorAll("#playerChips .chip.selected"))
-    .map(c => normalizeName(c.textContent));
-  const current = getPlayersFromTextarea();
-  // Merge: chips selection should reflect in textarea but keep any manually added names too
-  const merged = dedupeNames([...selected, ...current]);
+/* Update textarea so it mirrors the canonical merged order (selected chips first) */
+function updateTextareaFromSelection() {
+  const merged = buildFinalPlayerPool();
   document.getElementById("names").value = merged.join(", ");
 }
 
-/* Team size chips */
-function selectTeamSize(size, chip){
+/* Get selected goalie names (normalized) */
+function getSelectedGoalies() {
+  return Array.from(document.querySelectorAll("#goalieChips .chip.selected")).map(c => normalizeName(c.textContent));
+}
+
+/* Team size chip UI */
+function selectTeamSize(size, chip) {
   document.getElementById("teamSize").value = size;
   document.querySelectorAll("#teamSizeChips .chip").forEach(c => c.classList.remove("selected"));
   chip.classList.add("selected");
 }
 
 /* -----------------------------
-   Team generation (fixed)
+   Team generation (robust)
 -------------------------------- */
-function generateTeams(){
-  // 1) Get parsed & deduped players
-  let players = getPlayersFromTextarea(); // already normalized + deduped
+function generateTeams() {
+  // Build canonical player pool (selected chips first, then typed extras)
+  let players = buildFinalPlayerPool();
 
-  // 2) Get selected goalies and remove any goalie names from player pool to avoid duplicates
+  // Remove any selected goalies from the player pool to avoid duplication
   const selectedGoalies = getSelectedGoalies();
-  if (selectedGoalies.length > 0) {
+  if (selectedGoalies.length) {
     const goalieSet = new Set(selectedGoalies.map(g => g.toLowerCase()));
     players = players.filter(p => !goalieSet.has(p.toLowerCase()));
   }
 
-  // 3) team size and basic validation
+  // team size validation
   const teamSizeRaw = document.getElementById("teamSize").value;
   const teamSize = parseInt(teamSizeRaw, 10);
   if (!teamSize || teamSize < 1) {
@@ -191,7 +218,7 @@ function generateTeams(){
     return;
   }
 
-  // 4) Shuffle a copy and create teams; keep original players array immutable for debugging
+  // make a shuffled copy for distributing into teams
   const pool = players.slice();
   shuffle(pool);
 
@@ -201,36 +228,31 @@ function generateTeams(){
     return;
   }
 
-  // build teams (each is an array of player names — not including goalies yet)
-  const teams = [];
-  for (let i=0; i<numTeams; i++){
-    const teamPlayers = pool.splice(0, teamSize);
-    teams.push(teamPlayers.slice()); // copy
+  // create empty teams
+  const teams = Array.from({ length: numTeams }, () => []);
+
+  // Fill teams round-robin from shuffled pool for good distribution
+  let pIndex = 0;
+  while (pool.length) {
+    teams[pIndex % numTeams].push(pool.shift());
+    pIndex++;
   }
 
-  // distribute remaining players (leftovers) evenly
-  let idx = 0;
-  while (pool.length){
-    teams[idx % teams.length].push(pool.shift());
-    idx++;
-  }
-
-  // Assign goalies: rotate through selectedGoalies list; ensure goalie is not duplicated (we already removed them)
-  teams.forEach((t, i) => {
-    if (selectedGoalies.length){
-      const goalieName = selectedGoalies[i % selectedGoalies.length];
-      t.unshift(goalieName + " (G)");
+  // Assign selected goalies, rotating if more teams than goalies
+  teams.forEach((team, i) => {
+    if (selectedGoalies.length) {
+      const g = selectedGoalies[i % selectedGoalies.length];
+      team.unshift(g + " (G)");
     }
   });
 
-  // Render
   renderTeams(teams, teamSize);
 }
 
 /* -----------------------------
-   Rendering (unchanged layout but robust)
+   Rendering
 -------------------------------- */
-function renderTeams(teams, teamSize){
+function renderTeams(teams, teamSize) {
   const teamNames = [
     "The Five-Hole Fiddlers","Goal Diggers","Ball Blazers","Stick Flickers",
     "The Mighty Dangles","Deez Sticks","Floor Fury","The Dirty Dekes",
@@ -238,65 +260,53 @@ function renderTeams(teams, teamSize){
   ];
   shuffle(teamNames);
 
-  const output = document.getElementById("output");
-  output.innerHTML = "";
+  const out = document.getElementById("output");
+  out.innerHTML = "";
 
   teams.forEach((team, i) => {
     const displayName = teamNames[i % teamNames.length];
 
-    // Extract goalie from team array if present (we expect goalie to be at index 0 if assigned)
+    // extract goalie if present at index 0
     let goalie = null;
-    if (team.length && team[0].includes("(G)")) {
-      goalie = team[0];
-      // make a shallow copy of player list without goalie for the formation players
-      var playerList = team.slice(1);
-    } else {
-      var playerList = team.slice();
+    let playersOnly = team.slice();
+    if (playersOnly.length && playersOnly[0].includes("(G)")) {
+      goalie = playersOnly[0];
+      playersOnly = playersOnly.slice(1);
     }
 
-    // ensure we have at least 3 formation players (fill with empty strings if not enough)
+    // ensure at least three main formation players exist (fill with empty if not)
     const mainPlayers = [
-      playerList[0] || "",
-      playerList[1] || "",
-      playerList[2] || ""
+      playersOnly[0] || "",
+      playersOnly[1] || "",
+      playersOnly[2] || ""
     ];
+    const substitutes = playersOnly.slice(3);
 
-    // substitutes are any players beyond those 3
-    const substitutes = playerList.slice(3);
-
-    const goalieTop = i % 2 === 0; // alternate positioning
-
-    const formationHtml = `
-      <div class="formation-layout">
-        ${centeredRow(goalieTop ? goalie : mainPlayers[0])}
-        ${twoAcrossRow(mainPlayers[0], mainPlayers[1])}
-        ${centeredRow(!goalieTop ? goalie : mainPlayers[2])}
-      </div>
-    `;
-
-    const subsHtml = `
-      <div class="subs-section">
-        <div style="font-weight:bold; text-align:center; margin-bottom:8px;">Subs</div>
-        ${substitutes.length === 0 ? `<div style="text-align:center;">None</div>` :
-          substitutes.map(s => `<div class="sub-card">${formatPlayer(s)}</div>`).join("")}
-      </div>
-    `;
+    const goalieTop = i % 2 === 0;
 
     const cardHtml = `
       <div class="team">
         <div class="team-title">${displayName}</div>
         <div class="formation-container">
-          ${formationHtml}
-          ${subsHtml}
+          <div class="formation-layout">
+            ${centeredRow(goalieTop ? goalie : mainPlayers[0])}
+            ${twoAcrossRow(mainPlayers[0], mainPlayers[1])}
+            ${centeredRow(!goalieTop ? goalie : mainPlayers[2])}
+          </div>
+
+          <div class="subs-section">
+            <div style="font-weight:bold; text-align:center; margin-bottom:8px;">Subs</div>
+            ${substitutes.length === 0 ? `<div style="text-align:center;">None</div>` :
+              substitutes.map(s => `<div class="sub-card">${formatPlayer(s)}</div>`).join("")}
+          </div>
         </div>
       </div>
     `;
-
-    output.insertAdjacentHTML('beforeend', cardHtml);
+    out.insertAdjacentHTML('beforeend', cardHtml);
   });
 }
 
-function centeredRow(player){
+function centeredRow(player) {
   if (!player) return `<div class="row-center"><div style="height:46px"></div></div>`;
   return `
     <div class="row-center">
@@ -306,7 +316,7 @@ function centeredRow(player){
   `;
 }
 
-function twoAcrossRow(left,right){
+function twoAcrossRow(left, right) {
   return `
     <div class="row-two">
       <div class="player-block">
@@ -321,9 +331,14 @@ function twoAcrossRow(left,right){
   `;
 }
 
-function formatPlayer(p){
+function formatPlayer(p) {
   if (!p) return "";
-  return p.includes("(G)") ? "🧤 " + p.replace("(G)","").trim() : p;
+  // ensure goalie label is shown cleanly and not duplicated
+  if (p.includes("(G)")) {
+    const raw = p.replace("(G)", "").trim();
+    return "🧤 " + raw;
+  }
+  return p;
 }
 </script>
 </body>
