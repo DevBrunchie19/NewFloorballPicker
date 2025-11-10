@@ -63,7 +63,7 @@ button:hover {
   color: white;
 }
 
-/* --- Team Cards --- */
+/* --- Team Card --- */
 .team {
   background: white;
   border: 1px solid #ddd;
@@ -80,11 +80,37 @@ button:hover {
 }
 
 /* --- Formation Layout --- */
+.formation-container {
+  display: flex;
+  gap: 20px;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
 .formation-layout {
+  width: 75%;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 20px;
+}
+
+.subs-section {
+  width: 25%;
+  min-width: 120px;
+  background: #fafafa;
+  border-radius: 10px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  height: fit-content;
+}
+
+.sub-card {
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #fff;
+  margin-bottom: 6px;
 }
 
 .row-center {
@@ -115,23 +141,6 @@ button:hover {
 .player-name {
   margin-top: 6px;
   font-weight: 600;
-}
-
-/* --- Substitute Section --- */
-.subs-section {
-  min-width: 150px;
-  background: #fafafa;
-  border-radius: 10px;
-  padding: 10px;
-  border: 1px solid #ddd;
-  height: fit-content;
-}
-
-.sub-card {
-  padding: 6px 10px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  background: #fff;
 }
 </style>
 </head>
@@ -253,14 +262,12 @@ function generateTeams() {
     teams.push(players.splice(0, teamSize));
   }
 
-  // Distribute extras (if any)
   let idx = 0;
   while (players.length) {
     teams[idx % numTeams].push(players.shift());
     idx++;
   }
 
-  // Assign goalies
   teams.forEach((team, i) => {
     if (selectedGoalies.length) {
       const goalie = selectedGoalies[i % selectedGoalies.length] + " (G)";
@@ -274,7 +281,7 @@ function generateTeams() {
 /* -----------------------------
    Formation Rendering + Subs
 -------------------------------- */
-function renderTeams(teams, size) {
+function renderTeams(teams) {
   const teamNames = [
     "The Five-Hole Fiddlers", "Goal Diggers", "Ball Blazers", "Stick Flickers",
     "The Mighty Dangles", "Deez Sticks", "Floor Fury", "The Dirty Dekes",
@@ -290,17 +297,13 @@ function renderTeams(teams, size) {
   teams.forEach((team, i) => {
     let name = teamNames[i % teamNames.length];
 
-    // Extract goalie
     const goalieIndex = team.findIndex(p => p.includes("(G)"));
     let goalie = null;
     if (goalieIndex >= 0) {
       goalie = team.splice(goalieIndex, 1)[0];
     }
 
-    // Main 3 players for formation
     const mainPlayers = team.slice(0, 3);
-
-    // Substitutes = any players beyond those 3
     const substitutes = team.slice(3);
 
     const goalieTop = i % 2 === 0;
@@ -308,27 +311,20 @@ function renderTeams(teams, size) {
     let html = `<div class="team"><div class="team-title">${name}</div>`;
 
     html += `
-      <div style="display:flex; gap:20px; justify-content:center;">
+      <div class="formation-container">
         
-        <!-- Formation section -->
         <div class="formation-layout">
           ${centeredRow(goalieTop ? goalie : mainPlayers[0])}
           ${twoAcrossRow(mainPlayers[0], mainPlayers[1])}
           ${centeredRow(!goalieTop ? goalie : mainPlayers[2])}
         </div>
 
-        <!-- Substitutes section -->
         <div class="subs-section">
-          <div style="font-weight:bold; text-align:center; margin-bottom:8px;">
-            Substitutes
-          </div>
-
-          ${substitutes.length === 0 ? `
-            <div style="text-align:center;">None</div>
-          ` : substitutes.map(p => `
-            <div class="sub-card">${formatPlayer(p)}</div>
-          `).join("")}
+          <div style="font-weight:bold; text-align:center; margin-bottom:8px;">Subs</div>
+          ${substitutes.length === 0 ? `<div style="text-align:center;">None</div>` :
+            substitutes.map(p => `<div class="sub-card">${formatPlayer(p)}</div>`).join("")}
         </div>
+
       </div>
     `;
 
@@ -338,6 +334,7 @@ function renderTeams(teams, size) {
 }
 
 function centeredRow(player) {
+  if (!player) return `<div></div>`;
   return `
     <div class="row-center">
       <div class="player-icon"></div>
