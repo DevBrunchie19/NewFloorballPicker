@@ -77,21 +77,28 @@
     .player-block { display:flex; flex-direction:column; align-items:center; }
 
     /* ✅ REPLACED BLUE CIRCLE WITH PERSON ICON */
-    .player-icon {
-      width:60px;
-      height:60px;
-      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%233a52a3"><path d="M12 2a5 5 0 100 10 5 5 0 000-10zm0 12c-4.42 0-8 2.69-8 6v2h16v-2c0-3.31-3.58-6-8-6z"/></svg>');
-      background-size: contain;
-      background-repeat: no-repeat;
-      background-position: center;
-      border-radius: 0;
-      background-color: transparent;
-    }
+   .player-icon {
+  width:60px;
+  height:60px;
+  border:3px solid #3a52a3;       /* circle outline */
+  border-radius:50%;               /* make it round */
+  display:flex;                    /* center icon */
+  align-items:center;
+  justify-content:center;
+  background-color:white;          /* white background inside circle */
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="%233a52a3"><path d="M12 2a5 5 0 100 10 5 5 0 000-10zm0 12c-4.42 0-8 2.69-8 6v2h16v-2c0-3.31-3.58-6-8-6z"/></svg>');
+  background-repeat:no-repeat;
+  background-position:center;
+  background-size:70%;
+}
+
 
     /* ✅ GOALIE ICON */
     .player-icon.goalie {
-      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23ff9800"><path d="M12 2a5 5 0 100 10 5 5 0 000-10zm7 14c0-1.1-.9-2-2-2h-3v-2H10v2H7c-1.1 0-2 .9-2 2v2h14v-2z"/></svg>');
-    }
+  border-color:#ff9800; /* goalie outline colour */
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="%23ff9800"><path d="M12 2a5 5 0 100 10 5 5 0 000-10zm7 14c0-1.1-.9-2-2-2h-3v-2H10v2H7c-1.1 0-2 .9-2 2v2h14v-2z"/></svg>');
+}
+
 
     .player-name { margin-top:6px; font-weight:600; }
 
