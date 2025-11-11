@@ -166,12 +166,13 @@ function selectTeamSize(size, chip) {
 
 function clearAllPlayers() {
   document.getElementById("names").value = "";
-  document.querySelectorAll("#playerChips .chip, #goalieChips .chip").forEach(c=>c.classList.remove("selected"));
+  document.querySelectorAll("#playerChips .chip, #goalieChips .chip").forEach(c => c.classList.remove("selected"));
   updateClearButtonVisibility();
 }
+
 function updateClearButtonVisibility() {
-  const btn = document.getElementById("clearChipsBtn");
-  btn.classList.toggle("visible", buildFinalPlayerPool().length>0);
+  const hasPlayers = buildFinalPlayerPool().length > 0 || getSelectedGoalies().length > 0;
+  document.getElementById("clearChipsBtn").classList.toggle("visible", hasPlayers);
 }
 
 /* -----------------------------
@@ -202,7 +203,7 @@ function generateTeams(){
   }
   renderTeams(teams,teamSize,subsPerTeam);
 
-  // ✅ Show toolbar and hide share button if unsupported
+  // Show toolbar and hide share button if unsupported
   toolbar.style.display = document.getElementById("output").innerText.trim() ? "flex" : "none";
   if (!navigator.share) document.getElementById("shareTeamsBtn").style.display = "none";
 }
@@ -273,7 +274,6 @@ function shareTeams(){
 window.addEventListener("DOMContentLoaded",()=>{
   createPlayerChips();
   createGoalieChips();
-  // Removed input listener to allow free typing
   updateClearButtonVisibility();
 });
 </script>
