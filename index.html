@@ -90,7 +90,6 @@ document.addEventListener("DOMContentLoaded", () => {
 function shuffle(arr) { for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; } }
 function normalizeName(n) { return n.replace(/\s+/g, ' ').trim(); }
 
-/* dedupe preserving first-seen order (case-insensitive) */
 function dedupePreserveOrder(arr) {
   const seen = new Set();
   const out = [];
@@ -173,13 +172,12 @@ function selectTeamSize(size, chip) {
 }
 
 /* -----------------------------
-   Team generation — UPDATED CORRECT APPROACH
+   Team generation — CORRECTED
 -------------------------------- */
 function generateTeams() {
   let players = buildFinalPlayerPool();
   const selectedGoalies = getSelectedGoalies();
 
-  // Remove goalies from the main player pool
   if (selectedGoalies.length) {
     const goalieSet = new Set(selectedGoalies.map(g => g.toLowerCase()));
     players = players.filter(p => !goalieSet.has(p.toLowerCase()));
@@ -193,12 +191,11 @@ function generateTeams() {
 
   shuffle(players);
 
-  // --- Correct approach: always 2 teams ---
   const numTeams = 2;
   const teams = Array.from({ length: numTeams }, () => []);
   const subsPerTeam = Array.from({ length: numTeams }, () => []);
 
-  // Assign goalies (if any) one per team
+  // Assign one goalie per team
   for (let i = 0; i < numTeams; i++) {
     if (selectedGoalies.length) {
       const g = selectedGoalies[i % selectedGoalies.length];
@@ -206,15 +203,16 @@ function generateTeams() {
     }
   }
 
-  // Assign main players to each team until teamSize is reached
-  for (let i = 0; i < players.length; i++) {
-    const teamIndex = i % numTeams;
-    if (teams[teamIndex].length < teamSize) {
-      teams[teamIndex].push(players[i]);
+  // Assign skaters up to teamSize per team (goalie does not count)
+  let currentTeam = 0;
+  for (const player of players) {
+    const skaterCount = teams[currentTeam].filter(p => !p.includes("(G)")).length;
+    if (skaterCount < teamSize) {
+      teams[currentTeam].push(player);
     } else {
-      // Extra players become substitutes
-      subsPerTeam[teamIndex].push(players[i]);
+      subsPerTeam[currentTeam].push(player);
     }
+    currentTeam = (currentTeam + 1) % numTeams;
   }
 
   renderTeams(teams, teamSize, subsPerTeam);
