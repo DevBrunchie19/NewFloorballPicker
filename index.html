@@ -202,6 +202,10 @@ function generateTeams(){
     currentTeam=(currentTeam+1)%numTeams;
   }
   renderTeams(teams,teamSize,subsPerTeam);
+
+  // ✅ Show toolbar and hide share button if unsupported
+  toolbar.style.display = document.getElementById("output").innerText.trim() ? "flex" : "none";
+  if (!navigator.share) document.getElementById("shareTeamsBtn").style.display = "none";
 }
 
 function renderTeams(teams, teamSize, subsPerTeam){
