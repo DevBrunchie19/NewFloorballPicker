@@ -24,11 +24,9 @@ button:hover { background:#2b3a7d; }
 .chip { padding:8px 14px; background:#e0e0e0; border-radius:20px; cursor:pointer; transition:0.2s; user-select:none; }
 .chip.selected { background:#3a52a3; color:white; }
 
-/* --- Team Card --- */
 .team { background:white; border:1px solid #ddd; padding:14px; border-radius:10px; margin-top:16px; }
 .team-title { font-size:1.2rem; font-weight:bold; text-align:center; margin-bottom:10px; }
 
-/* --- 75/25 Formation Layout --- */
 .formation-container { display:flex; gap:20px; justify-content:space-between; align-items:flex-start; }
 .formation-layout { width:75%; display:flex; flex-direction:column; align-items:center; gap:20px; }
 .subs-section { width:25%; min-width:120px; background:#fafafa; border-radius:10px; padding:10px; border:1px solid #ddd; height:fit-content; }
@@ -40,7 +38,6 @@ button:hover { background:#2b3a7d; }
 .player-icon { width:60px; height:60px; background:#3a52a3; border-radius:50%; }
 .player-name { margin-top:6px; font-weight:600; }
 
-/* small screens: stack */
 @media (max-width:640px) {
   .formation-container { flex-direction:column; }
   .formation-layout { width:100%; }
@@ -87,10 +84,13 @@ document.addEventListener("DOMContentLoaded", () => {
 /* -----------------------------
    Utilities
 -------------------------------- */
-function shuffle(arr) { for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; } }
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+}
 function normalizeName(n) { return n.replace(/\s+/g, ' ').trim(); }
-
-/* dedupe preserving first-seen order (case-insensitive) */
 function dedupePreserveOrder(arr) {
   const seen = new Set();
   const out = [];
@@ -98,7 +98,10 @@ function dedupePreserveOrder(arr) {
     if (!raw) continue;
     const name = normalizeName(raw);
     const key = name.toLowerCase();
-    if (!seen.has(key)) { seen.add(key); out.push(name); }
+    if (!seen.has(key)) {
+      seen.add(key);
+      out.push(name);
+    }
   }
   return out;
 }
@@ -117,12 +120,13 @@ function createChips(list, containerId, handler) {
     container.appendChild(chip);
   });
 }
-
 function togglePlayer(name, chip) {
   chip.classList.toggle("selected");
   updateTextareaFromSelection();
 }
-function toggleGoalie(name, chip) { chip.classList.toggle("selected"); }
+function toggleGoalie(name, chip) {
+  chip.classList.toggle("selected");
+}
 
 /* -----------------------------
    Selection & parsing
@@ -131,19 +135,17 @@ function getSelectedPlayersFromChips() {
   return Array.from(document.querySelectorAll("#playerChips .chip.selected"))
     .map(c => normalizeName(c.textContent));
 }
-
 function getPlayersFromTextarea() {
   const raw = document.getElementById("names").value || "";
   if (!raw.trim()) return [];
-  return dedupePreserveOrder(raw.split(",").map(s => normalizeName(s)).filter(Boolean));
+  const parts = raw.split(",").map(s => normalizeName(s)).filter(Boolean);
+  return dedupePreserveOrder(parts);
 }
-
 function buildFinalPlayerPool() {
   const selectedChips = getSelectedPlayersFromChips();
   const typed = getPlayersFromTextarea();
   const seen = new Set(selectedChips.map(p => p.toLowerCase()));
   const merged = [...selectedChips];
-
   for (const t of typed) {
     if (!seen.has(t.toLowerCase())) {
       merged.push(t);
@@ -152,20 +154,13 @@ function buildFinalPlayerPool() {
   }
   return dedupePreserveOrder(merged);
 }
-
 function updateTextareaFromSelection() {
   const merged = buildFinalPlayerPool();
   document.getElementById("names").value = merged.join(", ");
 }
-
 function getSelectedGoalies() {
-  return Array.from(document.querySelectorAll("#goalieChips .chip.selected"))
-    .map(c => normalizeName(c.textContent));
+  return Array.from(document.querySelectorAll("#goalieChips .chip.selected")).map(c => normalizeName(c.textContent));
 }
-
-/* -----------------------------
-   Team size chip UI
--------------------------------- */
 function selectTeamSize(size, chip) {
   document.getElementById("teamSize").value = size;
   document.querySelectorAll("#teamSizeChips .chip").forEach(c => c.classList.remove("selected"));
@@ -178,7 +173,6 @@ function selectTeamSize(size, chip) {
 function generateTeams() {
   let players = buildFinalPlayerPool();
   const selectedGoalies = getSelectedGoalies();
-
   if (selectedGoalies.length) {
     const goalieSet = new Set(selectedGoalies.map(g => g.toLowerCase()));
     players = players.filter(p => !goalieSet.has(p.toLowerCase()));
@@ -186,22 +180,22 @@ function generateTeams() {
 
   const teamSize = parseInt(document.getElementById("teamSize").value, 10);
   if (!teamSize || teamSize < 1) {
-    alert("Enter a valid team size.");
+    alert("Enter a valid team size (e.g. 3).");
     return;
   }
 
   const pool = players.slice();
   shuffle(pool);
-  const numTeams = Math.floor(pool.length / teamSize);
 
+  const numTeams = Math.floor(pool.length / teamSize);
   if (numTeams === 0) {
     document.getElementById("output").innerHTML = "<p>Not enough players for chosen team size.</p>";
     return;
   }
 
   const teams = Array.from({ length: numTeams }, () => []);
-  let pIndex = 0;
 
+  let pIndex = 0;
   while (pool.length) {
     teams[pIndex % numTeams].push(pool.shift());
     pIndex++;
@@ -218,7 +212,7 @@ function generateTeams() {
 }
 
 /* -----------------------------
-   ✅ FIXED RENDERING SECTION
+   Rendering
 -------------------------------- */
 function renderTeams(teams, teamSize) {
   const teamNames = [
@@ -232,6 +226,8 @@ function renderTeams(teams, teamSize) {
   out.innerHTML = "";
 
   teams.forEach((team, i) => {
+    const displayName = teamNames[i % teamNames.length];
+
     let goalie = null;
     let playersOnly = team.slice();
     if (playersOnly.length && playersOnly[0].includes("(G)")) {
@@ -239,51 +235,46 @@ function renderTeams(teams, teamSize) {
       playersOnly = playersOnly.slice(1);
     }
 
-    // Ensure at least 3 player slots
     const mainPlayers = [
       playersOnly[0] || "",
       playersOnly[1] || "",
       playersOnly[2] || ""
     ];
-
     const substitutes = playersOnly.slice(3);
+
     const goalieTop = i % 2 === 0;
 
-    // ✅ FIX — use each player once
-    const topSlot = goalieTop ? goalie : mainPlayers[0];
-    const midLeft  = mainPlayers[1];
-    const midRight = mainPlayers[2];
-    const bottomSlot = goalieTop ? "" : goalie;
-
+    /* ------------------------------------------------------------------
+       ✅ FIXED SECTION BELOW — removed duplicated mainPlayers[0]
+    ------------------------------------------------------------------- */
     const cardHtml = `
       <div class="team">
-        <div class="team-title">${teamNames[i % teamNames.length]}</div>
-
+        <div class="team-title">${displayName}</div>
         <div class="formation-container">
           <div class="formation-layout">
-            ${centeredRow(topSlot)}
-            ${twoAcrossRow(midLeft, midRight)}
-            ${centeredRow(bottomSlot)}
+
+            ${centeredRow(goalieTop ? goalie : mainPlayers[0])}
+
+            ${twoAcrossRow(mainPlayers[1], mainPlayers[2])}
+
+            ${centeredRow(!goalieTop ? goalie : "")}
+
           </div>
 
           <div class="subs-section">
             <div style="font-weight:bold; text-align:center; margin-bottom:8px;">Subs</div>
-            ${substitutes.length === 0
-              ? `<div style="text-align:center;">None</div>`
-              : substitutes.map(s => `<div class="sub-card">${formatPlayer(s)}</div>`).join("")
-            }
+            ${substitutes.length === 0 ? `<div style="text-align:center;">None</div>` :
+              substitutes.map(s => `<div class="sub-card">${formatPlayer(s)}</div>`).join("")}
           </div>
         </div>
       </div>
     `;
+    /* ------------------------------------------------------------------ */
 
     out.insertAdjacentHTML('beforeend', cardHtml);
   });
 }
 
-/* -----------------------------
-   Small helpers
--------------------------------- */
 function centeredRow(player) {
   if (!player) return `<div class="row-center"><div style="height:46px"></div></div>`;
   return `
