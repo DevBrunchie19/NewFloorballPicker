@@ -259,12 +259,13 @@ function renderTeams(teams, teamSize, subsPerTeam) {
       playersOnly = playersOnly.slice(1);
     }
 
-    // ensure at least three main formation players exist (fill with empty if not)
-    const mainPlayers = [
-      playersOnly[0] || "",
-      playersOnly[1] || "",
-      playersOnly[2] || ""
-    ];
+   // ensure at least four main formation players exist
+const mainPlayers = [
+  playersOnly[0] || "",
+  playersOnly[1] || "",
+  playersOnly[2] || "",
+  playersOnly[3] || ""
+];
 
     // substitutes: use the subs we prepared earlier for that team (guaranteed not to be part of main)
     const substitutes = (subsPerTeam && subsPerTeam[i]) ? subsPerTeam[i].slice() : [];
@@ -273,9 +274,9 @@ function renderTeams(teams, teamSize, subsPerTeam) {
 
     // determine which items go to slots without accidentally repeating one
     const topSlot = goalieTop ? goalie : mainPlayers[0];
-    const midLeft  = mainPlayers[1];
-    const midRight = mainPlayers[2];
-    const bottomSlot = goalieTop ? "" : goalie;
+const midLeft  = mainPlayers[1];
+const midRight = mainPlayers[2];
+const bottomSlot = goalieTop ? mainPlayers[3] : goalie;
 
     const cardHtml = `
       <div class="team">
