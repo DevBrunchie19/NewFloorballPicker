@@ -24,9 +24,11 @@ button:hover { background:#2b3a7d; }
 .chip { padding:8px 14px; background:#e0e0e0; border-radius:20px; cursor:pointer; transition:0.2s; user-select:none; }
 .chip.selected { background:#3a52a3; color:white; }
 
+/* --- Team Card --- */
 .team { background:white; border:1px solid #ddd; padding:14px; border-radius:10px; margin-top:16px; }
 .team-title { font-size:1.2rem; font-weight:bold; text-align:center; margin-bottom:10px; }
 
+/* --- 75/25 Formation Layout --- */
 .formation-container { display:flex; gap:20px; justify-content:space-between; align-items:flex-start; }
 .formation-layout { width:75%; display:flex; flex-direction:column; align-items:center; gap:20px; }
 .subs-section { width:25%; min-width:120px; background:#fafafa; border-radius:10px; padding:10px; border:1px solid #ddd; height:fit-content; }
@@ -38,6 +40,7 @@ button:hover { background:#2b3a7d; }
 .player-icon { width:60px; height:60px; background:#3a52a3; border-radius:50%; }
 .player-name { margin-top:6px; font-weight:600; }
 
+/* small screens: stack */
 @media (max-width:640px) {
   .formation-container { flex-direction:column; }
   .formation-layout { width:100%; }
@@ -84,13 +87,10 @@ document.addEventListener("DOMContentLoaded", () => {
 /* -----------------------------
    Utilities
 -------------------------------- */
-function shuffle(arr) {
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-}
+function shuffle(arr) { for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; } }
 function normalizeName(n) { return n.replace(/\s+/g, ' ').trim(); }
+
+/* dedupe preserving first-seen order (case-insensitive) */
 function dedupePreserveOrder(arr) {
   const seen = new Set();
   const out = [];
@@ -98,10 +98,7 @@ function dedupePreserveOrder(arr) {
     if (!raw) continue;
     const name = normalizeName(raw);
     const key = name.toLowerCase();
-    if (!seen.has(key)) {
-      seen.add(key);
-      out.push(name);
-    }
+    if (!seen.has(key)) { seen.add(key); out.push(name); }
   }
   return out;
 }
@@ -120,13 +117,12 @@ function createChips(list, containerId, handler) {
     container.appendChild(chip);
   });
 }
+
 function togglePlayer(name, chip) {
   chip.classList.toggle("selected");
   updateTextareaFromSelection();
 }
-function toggleGoalie(name, chip) {
-  chip.classList.toggle("selected");
-}
+function toggleGoalie(name, chip) { chip.classList.toggle("selected"); }
 
 /* -----------------------------
    Selection & parsing
@@ -135,17 +131,19 @@ function getSelectedPlayersFromChips() {
   return Array.from(document.querySelectorAll("#playerChips .chip.selected"))
     .map(c => normalizeName(c.textContent));
 }
+
 function getPlayersFromTextarea() {
   const raw = document.getElementById("names").value || "";
   if (!raw.trim()) return [];
-  const parts = raw.split(",").map(s => normalizeName(s)).filter(Boolean);
-  return dedupePreserveOrder(parts);
+  return dedupePreserveOrder(raw.split(",").map(s => normalizeName(s)).filter(Boolean));
 }
+
 function buildFinalPlayerPool() {
   const selectedChips = getSelectedPlayersFromChips();
   const typed = getPlayersFromTextarea();
   const seen = new Set(selectedChips.map(p => p.toLowerCase()));
   const merged = [...selectedChips];
+
   for (const t of typed) {
     if (!seen.has(t.toLowerCase())) {
       merged.push(t);
@@ -154,13 +152,20 @@ function buildFinalPlayerPool() {
   }
   return dedupePreserveOrder(merged);
 }
+
 function updateTextareaFromSelection() {
   const merged = buildFinalPlayerPool();
   document.getElementById("names").value = merged.join(", ");
 }
+
 function getSelectedGoalies() {
-  return Array.from(document.querySelectorAll("#goalieChips .chip.selected")).map(c => normalizeName(c.textContent));
+  return Array.from(document.querySelectorAll("#goalieChips .chip.selected"))
+    .map(c => normalizeName(c.textContent));
 }
+
+/* -----------------------------
+   Team size chip UI
+-------------------------------- */
 function selectTeamSize(size, chip) {
   document.getElementById("teamSize").value = size;
   document.querySelectorAll("#teamSizeChips .chip").forEach(c => c.classList.remove("selected"));
@@ -169,10 +174,13 @@ function selectTeamSize(size, chip) {
 
 /* -----------------------------
    Team generation
+   (FIX: ensure 'main' players are exactly teamSize,
+         extras become substitutes)
 -------------------------------- */
 function generateTeams() {
   let players = buildFinalPlayerPool();
   const selectedGoalies = getSelectedGoalies();
+
   if (selectedGoalies.length) {
     const goalieSet = new Set(selectedGoalies.map(g => g.toLowerCase()));
     players = players.filter(p => !goalieSet.has(p.toLowerCase()));
@@ -180,27 +188,41 @@ function generateTeams() {
 
   const teamSize = parseInt(document.getElementById("teamSize").value, 10);
   if (!teamSize || teamSize < 1) {
-    alert("Enter a valid team size (e.g. 3).");
+    alert("Enter a valid team size.");
     return;
   }
 
   const pool = players.slice();
   shuffle(pool);
 
+  // number of teams based on full main-rosters (floor)
   const numTeams = Math.floor(pool.length / teamSize);
   if (numTeams === 0) {
     document.getElementById("output").innerHTML = "<p>Not enough players for chosen team size.</p>";
     return;
   }
 
+  // create empty teams and a substitutes array per team
   const teams = Array.from({ length: numTeams }, () => []);
+  const subsPerTeam = Array.from({ length: numTeams }, () => []);
 
-  let pIndex = 0;
-  while (pool.length) {
-    teams[pIndex % numTeams].push(pool.shift());
-    pIndex++;
+  // --- Deal main roster spots first: give each team exactly teamSize players (sequential)
+  // This prevents uneven extra players becoming "main" on some teams.
+  for (let t = 0; t < numTeams; t++) {
+    for (let s = 0; s < teamSize; s++) {
+      const p = pool.shift();
+      if (p !== undefined) teams[t].push(p);
+    }
   }
 
+  // Any remaining players become substitutes — distribute round-robin into subsPerTeam
+  let si = 0;
+  while (pool.length) {
+    subsPerTeam[si % numTeams].push(pool.shift());
+    si++;
+  }
+
+  // Assign selected goalies, rotating if more teams than goalies
   teams.forEach((team, i) => {
     if (selectedGoalies.length) {
       const g = selectedGoalies[i % selectedGoalies.length];
@@ -208,13 +230,14 @@ function generateTeams() {
     }
   });
 
-  renderTeams(teams, teamSize);
+  // Render, passing substitutes per team so they are shown only as subs (not main)
+  renderTeams(teams, teamSize, subsPerTeam);
 }
 
 /* -----------------------------
    Rendering
 -------------------------------- */
-function renderTeams(teams, teamSize) {
+function renderTeams(teams, teamSize, subsPerTeam) {
   const teamNames = [
     "The Five-Hole Fiddlers","Goal Diggers","Ball Blazers","Stick Flickers",
     "The Mighty Dangles","Deez Sticks","Floor Fury","The Dirty Dekes",
@@ -228,37 +251,40 @@ function renderTeams(teams, teamSize) {
   teams.forEach((team, i) => {
     const displayName = teamNames[i % teamNames.length];
 
+    // extract goalie if present at index 0
     let goalie = null;
     let playersOnly = team.slice();
-    if (playersOnly.length && playersOnly[0].includes("(G)")) {
+    if (playersOnly.length && playersOnly[0] && playersOnly[0].includes("(G)")) {
       goalie = playersOnly[0];
       playersOnly = playersOnly.slice(1);
     }
 
+    // ensure at least three main formation players exist (fill with empty if not)
     const mainPlayers = [
       playersOnly[0] || "",
       playersOnly[1] || "",
       playersOnly[2] || ""
     ];
-    const substitutes = playersOnly.slice(3);
+
+    // substitutes: use the subs we prepared earlier for that team (guaranteed not to be part of main)
+    const substitutes = (subsPerTeam && subsPerTeam[i]) ? subsPerTeam[i].slice() : [];
 
     const goalieTop = i % 2 === 0;
 
-    /* ------------------------------------------------------------------
-       ✅ FIXED SECTION BELOW — removed duplicated mainPlayers[0]
-    ------------------------------------------------------------------- */
+    // determine which items go to slots without accidentally repeating one
+    const topSlot = goalieTop ? goalie : mainPlayers[0];
+    const midLeft  = mainPlayers[1];
+    const midRight = mainPlayers[2];
+    const bottomSlot = goalieTop ? "" : goalie;
+
     const cardHtml = `
       <div class="team">
         <div class="team-title">${displayName}</div>
         <div class="formation-container">
           <div class="formation-layout">
-
-            ${centeredRow(goalieTop ? goalie : mainPlayers[0])}
-
-            ${twoAcrossRow(mainPlayers[1], mainPlayers[2])}
-
-            ${centeredRow(!goalieTop ? goalie : "")}
-
+            ${centeredRow(topSlot)}
+            ${twoAcrossRow(midLeft, midRight)}
+            ${centeredRow(bottomSlot)}
           </div>
 
           <div class="subs-section">
@@ -269,8 +295,6 @@ function renderTeams(teams, teamSize) {
         </div>
       </div>
     `;
-    /* ------------------------------------------------------------------ */
-
     out.insertAdjacentHTML('beforeend', cardHtml);
   });
 }
