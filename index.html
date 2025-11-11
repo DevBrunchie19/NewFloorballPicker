@@ -219,7 +219,7 @@ function generateTeams() {
 }
 
 /* -----------------------------
-   Rendering
+   Rendering — FIXED SLOT ASSIGNMENT
 -------------------------------- */
 function renderTeams(teams, teamSize, subsPerTeam) {
   const teamNames = [
@@ -242,21 +242,23 @@ function renderTeams(teams, teamSize, subsPerTeam) {
       playersOnly = playersOnly.slice(1);
     }
 
-    const mainPlayers = [
-      playersOnly[0] || "",
-      playersOnly[1] || "",
-      playersOnly[2] || "",
-      playersOnly[3] || ""
-    ];
-
     const substitutes = (subsPerTeam && subsPerTeam[i]) ? subsPerTeam[i].slice() : [];
 
     const goalieTop = i % 2 === 0;
 
-    const topSlot = goalieTop ? goalie : mainPlayers[0];
-    const midLeft  = mainPlayers[1];
-    const midRight = mainPlayers[2];
-    const bottomSlot = goalieTop ? mainPlayers[3] : goalie;
+    let topSlot, midLeft, midRight, bottomSlot;
+
+    if (goalieTop) {
+      topSlot = goalie;
+      midLeft  = playersOnly[0] || "";
+      midRight = playersOnly[1] || "";
+      bottomSlot = playersOnly[2] || "";
+    } else {
+      topSlot = playersOnly[0] || "";
+      midLeft  = playersOnly[1] || "";
+      midRight = playersOnly[2] || "";
+      bottomSlot = goalie;
+    }
 
     const cardHtml = `
       <div class="team">
