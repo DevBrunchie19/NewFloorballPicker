@@ -1,345 +1,351 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<title>Floorball Team Picker — Fixed Final</title>
-<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta charset="UTF-8">
+<title>Floorball Team Picker</title>
+
 <style>
-/* --- Base Styles --- */
-body {
-  font-family: Arial, sans-serif;
-  max-width: 650px;
-  margin: 40px auto;
-  padding: 20px;
-  background: #f9f9f9;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-h1 { padding: 12px; background: #3a52a3; text-align: center; border-radius: 8px; color: #fff; }
-textarea,input { width:100%; margin-top:6px; padding:12px; border-radius:6px; border:1px solid #ccc; }
-button { margin-top:14px; width:100%; padding:12px; font-size:1.1rem; background:#3a52a3; color:#fff; border:none; border-radius:6px; cursor:pointer; }
-button:hover { background:#2b3a7d; }
+    body {
+        font-family: Arial, sans-serif;
+        background: #f2f2f2;
+        padding: 20px;
+    }
 
-.chips-container { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
-.chip { padding:8px 14px; background:#e0e0e0; border-radius:20px; cursor:pointer; transition:0.2s; user-select:none; }
-.chip.selected { background:#3a52a3; color:white; }
+    .title {
+        text-align: center;
+        font-size: 36px;
+        font-weight: bold;
+        padding: 20px;
+        background: #2f4bab;
+        color: white;
+        border-radius: 10px;
+        margin-bottom: 30px;
+    }
 
-/* --- Team Card --- */
-.team { background:white; border:1px solid #ddd; padding:14px; border-radius:10px; margin-top:16px; }
-.team-title { font-size:1.2rem; font-weight:bold; text-align:center; margin-bottom:10px; }
+    .section-title {
+        font-size: 20px;
+        font-weight: bold;
+        margin-top: 20px;
+    }
 
-/* --- 75/25 Formation Layout --- */
-.formation-container { display:flex; gap:20px; justify-content:space-between; align-items:flex-start; }
-.formation-layout { width:75%; display:flex; flex-direction:column; align-items:center; gap:20px; }
-.subs-section { width:25%; min-width:120px; background:#fafafa; border-radius:10px; padding:10px; border:1px solid #ddd; height:fit-content; }
-.sub-card { padding:6px 10px; border:1px solid #ccc; border-radius:6px; background:#fff; margin-bottom:6px; }
+    .player-btn {
+        display: inline-block;
+        padding: 10px 20px;
+        margin: 6px;
+        border-radius: 25px;
+        color: white;
+        background: #365dc8;
+        cursor: pointer;
+        user-select: none;
+    }
 
-.row-center { display:flex; flex-direction:column; align-items:center; }
-.row-two { width:100%; display:flex; justify-content:space-between; }
-.player-block { display:flex; flex-direction:column; align-items:center; }
-.player-icon { width:60px; height:60px; background:#3a52a3; border-radius:50%; }
-.player-name { margin-top:6px; font-weight:600; }
+    .player-btn.selected {
+        background: #1c2f66;
+    }
 
-/* small screens: stack */
-@media (max-width:640px) {
-  .formation-container { flex-direction:column; }
-  .formation-layout { width:100%; }
-  .subs-section { width:100%; }
-}
+    textarea {
+        width: 100%;
+        height: 70px;
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+    }
+
+    #generateBtn {
+        background: #3564d4;
+        color: white;
+        padding: 12px 25px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        margin-top: 20px;
+        font-size: 18px;
+    }
+
+    .team {
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        margin-top: 24px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .team-title {
+        text-align: center;
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 15px;
+    }
+
+    .formation-wrapper {
+        display: flex;
+        gap: 12px;
+    }
+
+    .formation-layout {
+        flex: 75%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 30px;
+    }
+
+    .subs-section {
+        flex: 25%;
+        background: #f9f9f9;
+        padding: 10px;
+        border-radius: 10px;
+        border: 1px solid #ddd;
+        align-self: flex-start;
+    }
+
+    .row-center {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .row-two {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .player-block {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .player-icon {
+        width: 70px;
+        height: 70px;
+        background: #3b56b2;
+        border-radius: 50%;
+    }
+
+    .player-name {
+        margin-top: 8px;
+        font-weight: 600;
+    }
 </style>
 </head>
+
 <body>
-<h1>Floorball Team Picker</h1>
 
-<div><strong>The usual suspects:</strong></div>
-<div id="playerChips" class="chips-container"></div>
+<div class="title">Floorball Team Picker</div>
 
-<div><strong>Goalies:</strong></div>
-<div id="goalieChips" class="chips-container"></div>
+<div class="section-title">The usual suspects:</div>
+<div id="commonPlayers"></div>
 
-<label>Enter additional players (comma separated):</label>
-<textarea id="names" placeholder="Gretzky, McLovin, ..."></textarea>
+<div class="section-title">Goalies:</div>
+<div id="goalies"></div>
 
-<label>Team size:</label>
-<div id="teamSizeChips" class="chips-container">
-  <div class="chip" onclick="selectTeamSize(3,this)">3</div>
-  <div class="chip" onclick="selectTeamSize(5,this)">5</div>
-</div>
-<input type="number" id="teamSize" placeholder="3">
+<div class="section-title">Enter additional players (comma separated):</div>
+<textarea id="additionalPlayers"></textarea>
 
-<button onclick="generateTeams()">Generate Teams</button>
+<div class="section-title">Team size:</div>
+<button class="player-btn selected" id="teamSize3">3</button>
+<button class="player-btn" id="teamSize5">5</button>
 
-<h2>Teams:</h2>
+<br>
+<button id="generateBtn">Generate Teams</button>
+
 <div id="output"></div>
 
 <script>
-/* -----------------------------
-   Data + UI Setup
--------------------------------- */
-const commonPlayers = ["Brunchie", "Colin W-B", "Nabber", "Ben", "Bill", "Ron", "Eugene"];
-const goalies = ["Colin D", "Sam", "ClothGimp"];
+/* ---------------------------
+   INITIAL PLAYER LISTS
+---------------------------- */
+const commonList = ["Brunchie", "Colin W-B", "Nabber", "Ben", "Bill", "Ron", "Eugene"];
+const goalieList = ["Colin D", "Sam", "ClothGimp"];
 
-document.addEventListener("DOMContentLoaded", () => {
-  createChips(commonPlayers, "playerChips", togglePlayer);
-  createChips(goalies, "goalieChips", toggleGoalie);
-  // initialize team size selected UI if desired
-});
+// Render buttons
+function renderPlayerButtons() {
+    const commonDiv = document.getElementById("commonPlayers");
+    const goalieDiv = document.getElementById("goalies");
 
-/* -----------------------------
-   Utilities
--------------------------------- */
+    commonList.forEach(p => {
+        let btn = document.createElement("div");
+        btn.className = "player-btn common-player";
+        btn.textContent = p;
+        btn.onclick = () => btn.classList.toggle("selected");
+        commonDiv.appendChild(btn);
+    });
+
+    goalieList.forEach(p => {
+        let btn = document.createElement("div");
+        btn.className = "player-btn goalie-player";
+        btn.textContent = p;
+        btn.onclick = () => btn.classList.toggle("selected");
+        goalieDiv.appendChild(btn);
+    });
+}
+renderPlayerButtons();
+
+/* ---------------------------
+   TEAM SIZE SELECTION
+---------------------------- */
+let teamSize = 3;
+document.getElementById("teamSize3").onclick = () => {
+    teamSize = 3;
+    document.getElementById("teamSize3").classList.add("selected");
+    document.getElementById("teamSize5").classList.remove("selected");
+};
+
+document.getElementById("teamSize5").onclick = () => {
+    teamSize = 5;
+    document.getElementById("teamSize5").classList.add("selected");
+    document.getElementById("teamSize3").classList.remove("selected");
+};
+
+/* ---------------------------
+   CLEAN PLAYER BUILDER
+---------------------------- */
 function shuffle(arr) {
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-}
-
-/* normalize a name: trim, collapse multiple spaces */
-function normalizeName(n) {
-  return n.replace(/\s+/g, ' ').trim();
-}
-
-/* dedupe preserving first-seen order (case-insensitive key) */
-function dedupePreserveOrder(arr) {
-  const seen = new Set();
-  const out = [];
-  for (const raw of arr) {
-    if (!raw) continue;
-    const name = normalizeName(raw);
-    const key = name.toLowerCase();
-    if (!seen.has(key)) {
-      seen.add(key);
-      out.push(name);
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
     }
-  }
-  return out;
 }
 
-/* -----------------------------
-   Chips
--------------------------------- */
-function createChips(list, containerId, handler) {
-  const container = document.getElementById(containerId);
-  container.innerHTML = ""; // clear
-  list.forEach(name => {
-    const chip = document.createElement("div");
-    chip.className = "chip";
-    chip.textContent = name;
-    chip.onclick = () => handler(name, chip);
-    container.appendChild(chip);
-  });
+function buildPlayerList() {
+    const selectedCommon = Array.from(document.querySelectorAll(".common-player.selected"))
+        .map(btn => btn.textContent.trim());
+
+    const selectedGoalies = Array.from(document.querySelectorAll(".goalie-player.selected"))
+        .map(btn => btn.textContent.trim() + " (G)");
+
+    const extraRaw = document.getElementById("additionalPlayers").value;
+    const extraPlayers = extraRaw
+        .split(",")
+        .map(n => n.trim())
+        .filter(n => n.length > 0);
+
+    let merged = [...selectedCommon, ...extraPlayers];
+
+    // ✅ remove duplicates
+    merged = [...new Set(merged)];
+
+    // ✅ remove players who are chosen as goalies (non-G version)
+    const goalieNames = selectedGoalies.map(g => g.replace(" (G)", "").trim());
+    merged = merged.filter(p => !goalieNames.includes(p));
+
+    shuffle(merged);
+
+    return {
+        fieldPlayers: merged,
+        goalies: selectedGoalies
+    };
 }
 
-function togglePlayer(name, chip) {
-  chip.classList.toggle("selected");
-  // update textarea to reflect combined canonical list
-  updateTextareaFromSelection();
-}
+/* ---------------------------
+   TEAM GENERATION
+---------------------------- */
+document.getElementById("generateBtn").onclick = () => {
+    const { fieldPlayers, goalies } = buildPlayerList();
 
-function toggleGoalie(name, chip) {
-  chip.classList.toggle("selected");
-}
+    const totalPlayers = [...fieldPlayers, ...goalies];
+    const teamCount = Math.floor(totalPlayers.length / teamSize);
 
-/* -----------------------------
-   Selection & parsing
--------------------------------- */
-/* Get selected players from chips in the order they appear in the chip container */
-function getSelectedPlayersFromChips() {
-  return Array.from(document.querySelectorAll("#playerChips .chip.selected"))
-    .map(c => normalizeName(c.textContent));
-}
+    shuffle(totalPlayers);
 
-/* Parse textarea players (commas), normalize and dedupe */
-function getPlayersFromTextarea() {
-  const raw = document.getElementById("names").value || "";
-  if (!raw.trim()) return [];
-  const parts = raw.split(",").map(s => normalizeName(s)).filter(Boolean);
-  return dedupePreserveOrder(parts);
-}
-
-/* Build final player pool:
-   - start with selected chips (preserve chip order)
-   - then append names typed into textarea that are not already included
-*/
-function buildFinalPlayerPool() {
-  const selectedChips = getSelectedPlayersFromChips(); // preserves chip order
-  const typed = getPlayersFromTextarea();
-  // merge: start with chip-selected, then append typed that aren't already present (case-insensitive)
-  const seen = new Set(selectedChips.map(p => p.toLowerCase()));
-  const merged = [...selectedChips];
-  for (const t of typed) {
-    if (!seen.has(t.toLowerCase())) {
-      merged.push(t);
-      seen.add(t.toLowerCase());
-    }
-  }
-  // final dedupe defense (should be redundant)
-  return dedupePreserveOrder(merged);
-}
-
-/* Update textarea so it mirrors the canonical merged order (selected chips first) */
-function updateTextareaFromSelection() {
-  const merged = buildFinalPlayerPool();
-  document.getElementById("names").value = merged.join(", ");
-}
-
-/* Get selected goalie names (normalized) */
-function getSelectedGoalies() {
-  return Array.from(document.querySelectorAll("#goalieChips .chip.selected")).map(c => normalizeName(c.textContent));
-}
-
-/* Team size chip UI */
-function selectTeamSize(size, chip) {
-  document.getElementById("teamSize").value = size;
-  document.querySelectorAll("#teamSizeChips .chip").forEach(c => c.classList.remove("selected"));
-  chip.classList.add("selected");
-}
-
-/* -----------------------------
-   Team generation (robust)
--------------------------------- */
-function generateTeams() {
-  // Build canonical player pool (selected chips first, then typed extras)
-  let players = buildFinalPlayerPool();
-
-  // Remove any selected goalies from the player pool to avoid duplication
-  const selectedGoalies = getSelectedGoalies();
-  if (selectedGoalies.length) {
-    const goalieSet = new Set(selectedGoalies.map(g => g.toLowerCase()));
-    players = players.filter(p => !goalieSet.has(p.toLowerCase()));
-  }
-
-  // team size validation
-  const teamSizeRaw = document.getElementById("teamSize").value;
-  const teamSize = parseInt(teamSizeRaw, 10);
-  if (!teamSize || teamSize < 1) {
-    alert("Enter a valid team size (e.g. 3).");
-    return;
-  }
-
-  // make a shuffled copy for distributing into teams
-  const pool = players.slice();
-  shuffle(pool);
-
-  const numTeams = Math.floor(pool.length / teamSize);
-  if (numTeams === 0) {
-    document.getElementById("output").innerHTML = "<p>Not enough players for chosen team size.</p>";
-    return;
-  }
-
-  // create empty teams
-  const teams = Array.from({ length: numTeams }, () => []);
-
-  // Fill teams round-robin from shuffled pool for good distribution
-  let pIndex = 0;
-  while (pool.length) {
-    teams[pIndex % numTeams].push(pool.shift());
-    pIndex++;
-  }
-
-  // Assign selected goalies, rotating if more teams than goalies
-  teams.forEach((team, i) => {
-    if (selectedGoalies.length) {
-      const g = selectedGoalies[i % selectedGoalies.length];
-      team.unshift(g + " (G)");
-    }
-  });
-
-  renderTeams(teams, teamSize);
-}
-
-/* -----------------------------
-   Rendering
--------------------------------- */
-function renderTeams(teams, teamSize) {
-  const teamNames = [
-    "The Five-Hole Fiddlers","Goal Diggers","Ball Blazers","Stick Flickers",
-    "The Mighty Dangles","Deez Sticks","Floor Fury","The Dirty Dekes",
-    "Stickflix and Chill","The Deflectors","Ballz Deep","Just the Tip-Ins","The Slap and Tickles"
-  ];
-  shuffle(teamNames);
-
-  const out = document.getElementById("output");
-  out.innerHTML = "";
-
-  teams.forEach((team, i) => {
-    const displayName = teamNames[i % teamNames.length];
-
-    // extract goalie if present at index 0
-    let goalie = null;
-    let playersOnly = team.slice();
-    if (playersOnly.length && playersOnly[0].includes("(G)")) {
-      goalie = playersOnly[0];
-      playersOnly = playersOnly.slice(1);
+    const teams = [];
+    for (let i = 0; i < teamCount; i++) {
+        teams.push([]);
     }
 
-    // ensure at least three main formation players exist (fill with empty if not)
-    const mainPlayers = [
-      playersOnly[0] || "",
-      playersOnly[1] || "",
-      playersOnly[2] || ""
-    ];
-    const substitutes = playersOnly.slice(3);
+    let teamIndex = 0;
+    totalPlayers.forEach(player => {
+        teams[teamIndex].push(player);
+        teamIndex = (teamIndex + 1) % teamCount;
+    });
 
-    const goalieTop = i % 2 === 0;
+    renderTeams(teams);
+};
 
-    const cardHtml = `
-      <div class="team">
-        <div class="team-title">${displayName}</div>
-        <div class="formation-container">
-          <div class="formation-layout">
-            ${centeredRow(goalieTop ? goalie : mainPlayers[0])}
-            ${twoAcrossRow(mainPlayers[0], mainPlayers[1])}
-            ${centeredRow(!goalieTop ? goalie : mainPlayers[2])}
-          </div>
-
-          <div class="subs-section">
-            <div style="font-weight:bold; text-align:center; margin-bottom:8px;">Subs</div>
-            ${substitutes.length === 0 ? `<div style="text-align:center;">None</div>` :
-              substitutes.map(s => `<div class="sub-card">${formatPlayer(s)}</div>`).join("")}
-          </div>
-        </div>
-      </div>
-    `;
-    out.insertAdjacentHTML('beforeend', cardHtml);
-  });
+/* ---------------------------
+   HELPER RENDERING FUNCTIONS
+---------------------------- */
+function formatPlayer(p) {
+    if (!p) return "";
+    return p.includes("(G)") ? "🧤 " + p : p;
 }
 
 function centeredRow(player) {
-  if (!player) return `<div class="row-center"><div style="height:46px"></div></div>`;
-  return `
-    <div class="row-center">
-      <div class="player-icon"></div>
-      <div class="player-name">${formatPlayer(player)}</div>
-    </div>
-  `;
+    return `
+        <div class="row-center">
+            <div class="player-icon"></div>
+            <div class="player-name">${formatPlayer(player)}</div>
+        </div>
+    `;
 }
 
 function twoAcrossRow(left, right) {
-  return `
-    <div class="row-two">
-      <div class="player-block">
-        <div class="player-icon"></div>
-        <div class="player-name">${formatPlayer(left)}</div>
-      </div>
-      <div class="player-block">
-        <div class="player-icon"></div>
-        <div class="player-name">${formatPlayer(right)}</div>
-      </div>
-    </div>
-  `;
+    return `
+        <div class="row-two">
+            <div class="player-block">
+                <div class="player-icon"></div>
+                <div class="player-name">${formatPlayer(left)}</div>
+            </div>
+            <div class="player-block">
+                <div class="player-icon"></div>
+                <div class="player-name">${formatPlayer(right)}</div>
+            </div>
+        </div>
+    `;
 }
 
-function formatPlayer(p) {
-  if (!p) return "";
-  // ensure goalie label is shown cleanly and not duplicated
-  if (p.includes("(G)")) {
-    const raw = p.replace("(G)", "").trim();
-    return "🧤 " + raw;
-  }
-  return p;
+/* ---------------------------
+   RENDER TEAMS
+---------------------------- */
+function renderTeams(teams) {
+    const output = document.getElementById("output");
+    output.innerHTML = "";
+
+    teams.forEach((team, i) => {
+        // extract goalie
+        const goalieIndex = team.findIndex(p => p.includes("(G)"));
+        let goalie = null;
+
+        if (goalieIndex >= 0) {
+            goalie = team.splice(goalieIndex, 1)[0];
+        }
+
+        const mainPlayers = team.slice(0, 3);
+        const subs = team.slice(3);
+
+        const goalieTop = i % 2 === 0;
+
+        let html = `<div class="team"><div class="team-title">Team ${i + 1}</div>`;
+
+        html += `
+            <div class="formation-wrapper">
+                <div class="formation-layout">
+                    ${centeredRow(goalieTop ? goalie : mainPlayers[0])}
+                    ${twoAcrossRow(mainPlayers[0], mainPlayers[1])}
+                    ${centeredRow(!goalieTop ? goalie : mainPlayers[2])}
+                </div>
+
+                <div class="subs-section">
+                    <div style="font-weight:bold; text-align:center;">Subs</div>
+                    <div style="margin-top:10px;">
+                        ${subs.length === 0 ? "None" : subs.map(p => `
+                            <div style="padding:4px 6px; border:1px solid #ccc; border-radius:6px; background:#fff; margin-bottom:5px;">
+                                ${formatPlayer(p)}
+                            </div>
+                        `).join("")}
+                    </div>
+                </div>
+            </div>
+        `;
+
+        html += `</div>`;
+        output.innerHTML += html;
+    });
 }
 </script>
+
 </body>
 </html>
