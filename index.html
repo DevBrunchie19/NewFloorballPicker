@@ -142,8 +142,15 @@ function createChips(list, containerId, handler) {
   });
 }
 
-function togglePlayer(name, chip) { chip.classList.toggle("selected"); updateTextareaFromSelection(); }
-function toggleGoalie(name, chip) { chip.classList.toggle("selected"); }
+function togglePlayer(name, chip) { 
+  chip.classList.toggle("selected"); 
+  updateTextareaFromSelection(); 
+  updateClearButtonVisibility(); // ✅ fixed visibility
+}
+function toggleGoalie(name, chip) { 
+  chip.classList.toggle("selected"); 
+  updateClearButtonVisibility(); // ✅ fixed visibility
+}
 
 function getSelectedPlayersFromChips() { return Array.from(document.querySelectorAll("#playerChips .chip.selected")).map(c=>c.textContent.trim()); }
 function getPlayersFromTextarea() { return (document.getElementById("names").value || "").split(",").map(s=>s.trim()).filter(Boolean); }
@@ -203,7 +210,6 @@ function generateTeams(){
   }
   renderTeams(teams,teamSize,subsPerTeam);
 
-  // Show toolbar and hide share button if unsupported
   toolbar.style.display = document.getElementById("output").innerText.trim() ? "flex" : "none";
   if (!navigator.share) document.getElementById("shareTeamsBtn").style.display = "none";
 }
@@ -275,6 +281,7 @@ window.addEventListener("DOMContentLoaded",()=>{
   createPlayerChips();
   createGoalieChips();
   updateClearButtonVisibility();
+  document.getElementById("names").addEventListener("input", updateClearButtonVisibility); // ✅ textarea triggers visibility
 });
 </script>
 </body>
