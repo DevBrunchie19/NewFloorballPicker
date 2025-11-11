@@ -351,6 +351,18 @@ function renderTeams(teams, subs){
     out.insertAdjacentHTML("beforeend",html);
   });
 }
+const toolbar=document.getElementById("exportToolbar");
+function saveTeamsAsImage(){
+  const output=document.getElementById("output");
+  if(!output.innerText.trim()){alert("No teams to save yet!"); return;}
+  html2canvas(output,{backgroundColor:'#f9f9f9',scale:2}).then(canvas=>{ const link=document.createElement("a"); link.download="floorball_teams.png"; link.href=canvas.toDataURL("image/png"); link.click(); });
+}
+function shareTeams(){
+  const output=document.getElementById("output").innerText.trim();
+  if(!output){alert("No teams to share yet!");return;}
+  if(navigator.share){ navigator.share({title:"Floorball Teams",text:output}).catch(err=>console.log("Share cancelled:",err)); }
+  else { alert("Sharing not supported on this device/browser. Try saving instead."); }
+}
 
 window.addEventListener("DOMContentLoaded",()=>{
   createPlayerChips();
