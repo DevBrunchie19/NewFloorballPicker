@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<title>Floorball Team Picker — Fixed Final</title>
+<title>Floorball Team Picker — Final with Team Sheet</title>
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <style>
 /* --- Base Styles --- */
@@ -172,7 +172,7 @@ function selectTeamSize(size, chip) {
 }
 
 /* -----------------------------
-   Team generation — CORRECTED
+   Team generation
 -------------------------------- */
 function generateTeams() {
   let players = buildFinalPlayerPool();
@@ -219,7 +219,7 @@ function generateTeams() {
 }
 
 /* -----------------------------
-   Rendering — FIXED SLOT ASSIGNMENT
+   Team Sheet Rendering
 -------------------------------- */
 function renderTeams(teams, teamSize, subsPerTeam) {
   const teamNames = [
