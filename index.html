@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -162,7 +161,7 @@
 const commonList = ["Brunchie", "Colin W-B", "Nabber", "Ben", "Bill", "Ron", "Eugene"];
 const goalieList = ["Colin D", "Sam", "ClothGimp"];
 
-// Render buttons
+// Render player buttons
 function renderPlayerButtons() {
     const commonDiv = document.getElementById("commonPlayers");
     const goalieDiv = document.getElementById("goalies");
@@ -186,7 +185,7 @@ function renderPlayerButtons() {
 renderPlayerButtons();
 
 /* ---------------------------
-   TEAM SIZE SELECTION
+   TEAM SIZE
 ---------------------------- */
 let teamSize = 3;
 document.getElementById("teamSize3").onclick = () => {
@@ -202,7 +201,7 @@ document.getElementById("teamSize5").onclick = () => {
 };
 
 /* ---------------------------
-   CLEAN PLAYER BUILDER
+   SHUFFLE
 ---------------------------- */
 function shuffle(arr) {
     for (let i = arr.length - 1; i > 0; i--) {
@@ -211,6 +210,9 @@ function shuffle(arr) {
     }
 }
 
+/* ---------------------------
+   BUILD PLAYER LIST
+---------------------------- */
 function buildPlayerList() {
     const selectedCommon = Array.from(document.querySelectorAll(".common-player.selected"))
         .map(btn => btn.textContent.trim());
@@ -225,49 +227,40 @@ function buildPlayerList() {
         .filter(n => n.length > 0);
 
     let merged = [...selectedCommon, ...extraPlayers];
-
-    // ✅ remove duplicates
     merged = [...new Set(merged)];
 
-    // ✅ remove players who are chosen as goalies (non-G version)
     const goalieNames = selectedGoalies.map(g => g.replace(" (G)", "").trim());
     merged = merged.filter(p => !goalieNames.includes(p));
 
-    shuffle(merged);
+    const fieldPlayers = [...merged];
+    const goalies = [...selectedGoalies];
 
-    return {
-        fieldPlayers: merged,
-        goalies: selectedGoalies
-    };
+    const totalPlayers = [...goalies, ...fieldPlayers];
+    shuffle(totalPlayers);
+
+    return totalPlayers;
 }
 
 /* ---------------------------
-   TEAM GENERATION
+   GENERATE TEAMS
 ---------------------------- */
 document.getElementById("generateBtn").onclick = () => {
-    const { fieldPlayers, goalies } = buildPlayerList();
-
-    const totalPlayers = [...fieldPlayers, ...goalies];
+    const totalPlayers = buildPlayerList();
     const teamCount = Math.floor(totalPlayers.length / teamSize);
 
-    shuffle(totalPlayers);
+    const teams = Array.from({ length: teamCount }, () => []);
 
-    const teams = [];
-    for (let i = 0; i < teamCount; i++) {
-        teams.push([]);
-    }
-
-    let teamIndex = 0;
+    let index = 0;
     totalPlayers.forEach(player => {
-        teams[teamIndex].push(player);
-        teamIndex = (teamIndex + 1) % teamCount;
+        teams[index].push(player);
+        index = (index + 1) % teamCount;
     });
 
     renderTeams(teams);
 };
 
 /* ---------------------------
-   HELPER RENDERING FUNCTIONS
+   RENDER HELPERS
 ---------------------------- */
 function formatPlayer(p) {
     if (!p) return "";
@@ -299,23 +292,21 @@ function twoAcrossRow(left, right) {
 }
 
 /* ---------------------------
-   RENDER TEAMS
+   RENDER TEAMS (fixed!)
 ---------------------------- */
 function renderTeams(teams) {
     const output = document.getElementById("output");
     output.innerHTML = "";
 
     teams.forEach((team, i) => {
-        // extract goalie
-        const goalieIndex = team.findIndex(p => p.includes("(G)"));
-        let goalie = null;
+        const goalie = team.find(p => p.includes("(G)"));
+        const fieldPlayers = team.filter(p => !p.includes("(G)"));
 
-        if (goalieIndex >= 0) {
-            goalie = team.splice(goalieIndex, 1)[0];
-        }
+        while (fieldPlayers.length < 3) fieldPlayers.push("");
 
-        const mainPlayers = team.slice(0, 3);
-        const subs = team.slice(3);
+        const subs = team.filter(p =>
+            p !== goalie && !fieldPlayers.slice(0, 3).includes(p)
+        );
 
         const goalieTop = i % 2 === 0;
 
@@ -324,18 +315,19 @@ function renderTeams(teams) {
         html += `
             <div class="formation-wrapper">
                 <div class="formation-layout">
-                    ${centeredRow(goalieTop ? goalie : mainPlayers[0])}
-                    ${twoAcrossRow(mainPlayers[0], mainPlayers[1])}
-                    ${centeredRow(!goalieTop ? goalie : mainPlayers[2])}
+                    ${centeredRow(goalieTop ? goalie : fieldPlayers[0])}
+                    ${twoAcrossRow(fieldPlayers[0], fieldPlayers[1])}
+                    ${centeredRow(!goalieTop ? goalie : fieldPlayers[2])}
                 </div>
 
                 <div class="subs-section">
                     <div style="font-weight:bold; text-align:center;">Subs</div>
                     <div style="margin-top:10px;">
-                        ${subs.length === 0 ? "None" : subs.map(p => `
-                            <div style="padding:4px 6px; border:1px solid #ccc; border-radius:6px; background:#fff; margin-bottom:5px;">
-                                ${formatPlayer(p)}
-                            </div>
+                        ${subs.length === 0 ? "None" :
+                            subs.map(p => `
+                                <div style="padding:4px 6px; border:1px solid #ccc; border-radius:6px; background:#fff; margin-bottom:5px;">
+                                    ${formatPlayer(p)}
+                                </div>
                         `).join("")}
                     </div>
                 </div>
