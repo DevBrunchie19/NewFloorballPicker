@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <title>Floorball Team Picker</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -14,6 +15,7 @@
       border-radius: 12px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
+
     h1 {
       padding: 12px;
       background: #3a52a3;
@@ -22,9 +24,9 @@
       color: #fff;
       font-size: clamp(1.5rem, 5vw, 2rem);
     }
+
     textarea, input {
       width: 100%;
-      display: block;
       margin: 6px auto 12px auto;
       padding: 12px;
       border: 1px solid #ccc;
@@ -32,50 +34,110 @@
       font-size: 1rem;
       box-sizing: border-box;
     }
-    textarea { resize: none; min-height: 100px; }
-    .button-wrapper { display: flex; justify-content: center; }
+
     .image-button {
       display: block;
       margin: 0 auto;
       width: 85px;
-      height: auto;
       cursor: pointer;
       filter: invert(29%) sepia(74%) saturate(488%) hue-rotate(189deg) brightness(100%) contrast(103%);
       transition: transform 0.15s ease;
     }
-    .image-button:hover { transform: scale(1.1); }
-    .image-button:active { transform: scale(0.95); }
-    #buttonText { text-align:center; font-size:0.95rem; color:#555; margin-top:10px; }
-    .team { background: #fff; padding: 12px; margin: 10px 0; border-radius: 8px; border:1px solid #ddd; }
 
-    .chips-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
-    #clearChipsBtn {
-      background: #3a52a3; color:white; border:none; border-radius:16px;
-      padding:6px 12px; cursor:pointer; font-size:0.9rem;
-      transition: background 0.2s ease, transform 0.1s ease, opacity 0.3s ease;
-      opacity:0; pointer-events:none;
+    .chips-header {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:6px;
     }
-    #clearChipsBtn.visible { opacity:1; pointer-events:auto; }
-    #clearChipsBtn:hover { background:#516fd3; }
-    #clearChipsBtn:active { transform:scale(0.95); }
 
-    .chips-container { display:flex; flex-wrap:wrap; gap:8px; margin:8px 0 12px 0; }
-    .chip { padding:8px 14px; background:#e0e0e0; border-radius:20px; cursor:pointer; font-size:0.95rem; transition:all 0.2s ease; user-select:none; }
-    .chip:hover { background:#d0d0d0; }
-    .chip.selected { background:#3a52a3; color:white; box-shadow:0 2px 6px rgba(0,0,0,0.15); }
+    #clearChipsBtn {
+      background: #3a52a3;
+      color:white;
+      border:none;
+      border-radius:16px;
+      padding:6px 12px;
+      cursor:pointer;
+      font-size:0.9rem;
+      opacity:0;
+      pointer-events:none;
+      transition:opacity .3s ease;
+    }
 
-    .team-size-container { display:flex; gap:8px; margin:6px 0 12px 0; }
+    #clearChipsBtn.visible {
+      opacity:1;
+      pointer-events:auto;
+    }
 
-    /* --- Team Sheet Styling --- */
-    .team-title { font-size:1.2rem; font-weight:bold; text-align:center; margin-bottom:10px; }
-    .formation-container { display:flex; gap:20px; justify-content:space-between; align-items:flex-start; }
-    .formation-layout { width:75%; display:flex; flex-direction:column; align-items:center; gap:20px; }
-    .subs-section { width:25%; min-width:120px; background:#fafafa; border-radius:10px; padding:10px; border:1px solid #ddd; height:fit-content; }
-    .sub-card { padding:6px 10px; border:1px solid #ccc; border-radius:6px; background:#fff; margin-bottom:6px; }
+    /* Player selection chip list */
+    .chips-container {
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin:8px 0 12px 0;
+    }
+
+    .chip {
+      padding:8px 14px;
+      background:#e0e0e0;
+      border-radius:20px;
+      cursor:pointer;
+      transition:all 0.2s ease;
+    }
+
+    .chip.selected {
+      background:#3a52a3;
+      color:white;
+    }
+
+    /* ✅ Restored proper button layout */
+    .team-size-container {
+      display:flex;
+      gap:8px;
+      margin:6px 0 12px 0;
+    }
+
+    .team-size-container .chip {
+      width:auto;
+      flex:0 0 auto;
+      text-align:center;
+    }
+
+    /* Formation layout + PNG icon styling */
+    .formation-container {
+      display:flex;
+      gap:20px;
+      justify-content:space-between;
+      align-items:flex-start;
+    }
+
+    .formation-layout {
+      width:75%;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:20px;
+    }
+
+    .subs-section {
+      width:25%;
+      min-width:120px;
+      background:#fafafa;
+      border-radius:10px;
+      padding:10px;
+      border:1px solid #ddd;
+    }
+
+    .player-icon {
+      width:60px;
+      height:60px;
+      object-fit:contain;
+      border-radius:50%;
+    }
+
     .row-center { display:flex; flex-direction:column; align-items:center; }
     .row-two { width:100%; display:flex; justify-content:space-between; }
     .player-block { display:flex; flex-direction:column; align-items:center; }
-    .player-icon { width:60px; height:60px; background:#3a52a3; border-radius:50%; }
     .player-name { margin-top:6px; font-weight:600; }
 
     @media (max-width:640px) {
@@ -85,12 +147,13 @@
     }
   </style>
 </head>
+
 <body>
 <h1>Floorball Team Picker</h1>
 
 <div class="chips-header">
   <label>The usual suspects:</label>
-  <button id="clearChipsBtn" type="button" onclick="clearAllPlayers()">Clear All</button>
+  <button id="clearChipsBtn" onclick="clearAllPlayers()">Clear All</button>
 </div>
 <div id="playerChips" class="chips-container"></div>
 
@@ -98,7 +161,7 @@
 <div id="goalieChips" class="chips-container"></div>
 
 <label for="names">Enter additional players (comma separated):</label>
-<textarea id="names" rows="5" placeholder="Gretzky, McLovin, ..."></textarea>
+<textarea id="names" placeholder="Gretzky, McLovin..."></textarea>
 
 <label for="teamSize">Team size:</label>
 <div class="team-size-container">
@@ -108,67 +171,60 @@
 <input type="number" id="teamSize" min="1" placeholder="e.g. 3">
 
 <div class="button-wrapper">
-  <img src="Floorball_Blk@2x.png" alt="Generate Teams" class="image-button" onclick="generateTeams()">
+  <img src="Floorball_Blk@2x.png" class="image-button" onclick="generateTeams()">
 </div>
-<p id="buttonText">Click the floorball to generate teams</p>
 
-<h2>Teams:</h2>
+<h2>Teams</h2>
 <div id="output"></div>
 
-<div id="exportToolbar" style="display: none; justify-content: center; gap: 10px; margin-top: 12px; flex-wrap: wrap;">
-  <button id="saveImageBtn" onclick="saveTeamsAsImage()" class="toolbar-btn">Save as Image</button>
-  <button id="shareTeamsBtn" onclick="shareTeams()" class="toolbar-btn">Share Teams</button>
-</div>
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
 <script>
-const commonPlayers = ["Brunchie","Colin W-B","Nabber","Ben","Bill","Ron","Eugene"];
-const goalies = ["Colin D","Sam","ClothGimp"];
+/* Initial players */
+const commonPlayers=["Brunchie","Colin W-B","Nabber","Ben","Bill","Ron","Eugene"];
+const goalies=["Colin D","Sam","ClothGimp"];
 
-function createPlayerChips() { createChips(commonPlayers, "playerChips", togglePlayer); }
-function createGoalieChips() { createChips(goalies, "goalieChips", toggleGoalie); }
-
-function createChips(list, containerId, handler){
-  const container=document.getElementById(containerId);
-  container.innerHTML="";
+function createChips(list,id,cb){
+  const box=document.getElementById(id);
+  box.innerHTML="";
   list.forEach(name=>{
     const chip=document.createElement("div");
     chip.className="chip";
     chip.textContent=name;
-    chip.onclick=()=>handler(name, chip);
-    container.appendChild(chip);
+    chip.onclick=()=>cb(name,chip);
+    box.appendChild(chip);
   });
 }
 
-// ✅ Updated togglePlayer to remove unselected player from list
-function togglePlayer(name, chip){
-  const textarea=document.getElementById("names");
-  let names=textarea.value.split(",").map(n=>n.trim()).filter(Boolean);
+function createPlayerChips(){ createChips(commonPlayers,"playerChips",togglePlayer); }
+function createGoalieChips(){ createChips(goalies,"goalieChips",toggleGoalie); }
 
-  if(names.includes(name)){
-    names=names.filter(n=>n!==name);
+function togglePlayer(name, chip){
+  const field=document.getElementById("names");
+  let arr=field.value.split(",").map(n=>n.trim()).filter(Boolean);
+
+  if(arr.includes(name)){
+    arr=arr.filter(n=>n!==name);
     chip.classList.remove("selected");
   } else {
-    names.push(name);
+    arr.push(name);
     chip.classList.add("selected");
   }
-
-  textarea.value=names.join(", ");
-  updateClearButtonVisibility();
+  field.value=arr.join(", ");
+  updateClear();
 }
 
 function toggleGoalie(name, chip){
   chip.classList.toggle("selected");
-  updateClearButtonVisibility();
+  updateClear();
 }
 
-function buildFinalPlayerPool(){
-  const typed=document.getElementById("names").value.split(",").map(n=>n.trim()).filter(Boolean);
-  return typed;
+function buildFinal(){
+  return document.getElementById("names").value.split(",").map(n=>n.trim()).filter(Boolean);
 }
 
-function getSelectedGoalies(){
-  return Array.from(document.querySelectorAll("#goalieChips .chip.selected")).map(c=>c.textContent.trim());
+function getGoalies(){
+  return [...document.querySelectorAll("#goalieChips .chip.selected")].map(c=>c.textContent);
 }
 
 function selectTeamSize(size, chip){
@@ -179,102 +235,129 @@ function selectTeamSize(size, chip){
 
 function clearAllPlayers(){
   document.getElementById("names").value="";
-  document.querySelectorAll("#playerChips .chip, #goalieChips .chip").forEach(c=>c.classList.remove("selected"));
-  updateClearButtonVisibility();
+  document.querySelectorAll(".chips-container .chip").forEach(c=>c.classList.remove("selected"));
+  updateClear();
 }
 
-function updateClearButtonVisibility(){
-  const hasPlayers=buildFinalPlayerPool().length>0 || getSelectedGoalies().length>0;
-  document.getElementById("clearChipsBtn").classList.toggle("visible", hasPlayers);
+function updateClear(){
+  const show = buildFinal().length>0 || getGoalies().length>0;
+  document.getElementById("clearChipsBtn").classList.toggle("visible",show);
 }
 
-function shuffle(arr){for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}}
+function shuffle(a){
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+}
+
+/* ✅ NEW: choose correct icon */
+function getPlayerIcon(player){
+  return player.includes("(G)") ? "goalie.png" : "player.png";
+}
+
+/* ✅ UPDATED: use PNG icons */
+function centeredRow(player){
+  return player ? `
+  <div class="row-center">
+    <img src="${getPlayerIcon(player)}" class="player-icon">
+    <div class="player-name">${formatPlayer(player)}</div>
+  </div>` : `<div class="row-center"><div style="height:46px"></div></div>`;
+}
+
+function twoAcrossRow(left,right){
+  return `
+  <div class="row-two">
+    <div class="player-block">
+      ${left ? `<img src="${getPlayerIcon(left)}" class="player-icon">` : `<div style="width:60px;height:60px;"></div>`}
+      <div class="player-name">${formatPlayer(left)}</div>
+    </div>
+    <div class="player-block">
+      ${right ? `<img src="${getPlayerIcon(right)}" class="player-icon">` : `<div style="width:60px;height:60px;"></div>`}
+      <div class="player-name">${formatPlayer(right)}</div>
+    </div>
+  </div>`;
+}
+
+function formatPlayer(p){
+  if(!p) return "";
+  return p.includes("(G)") ? `🧤 ${p.replace("(G)","")}` : p;
+}
 
 function generateTeams(){
-  let players=buildFinalPlayerPool();
-  const selectedGoalies=getSelectedGoalies();
-  const teamSize=parseInt(document.getElementById("teamSize").value,10);
-  if(!teamSize||teamSize<1){alert("Enter valid team size.");return;}
+  let players=buildFinal();
+  const g=getGoalies();
+  const size=parseInt(document.getElementById("teamSize").value);
 
-  if(selectedGoalies.length){ const gSet=new Set(selectedGoalies.map(g=>g.toLowerCase())); players=players.filter(p=>!gSet.has(p.toLowerCase())); }
+  if(!size){ alert("Enter valid team size"); return; }
+
+  /* Remove selected goalies from player pool */
+  const gSet=new Set(g.map(x=>x.toLowerCase()));
+  players = players.filter(p=>!gSet.has(p.toLowerCase()));
 
   shuffle(players);
-  const numTeams=2;
-  const teams=Array.from({length:numTeams},()=>[]);
-  const subsPerTeam=Array.from({length:numTeams},()=>[]);
 
-  for(let i=0;i<numTeams;i++){ if(selectedGoalies.length){ teams[i].push(selectedGoalies[i%selectedGoalies.length]+" (G)"); } }
+  const teams=[[],[]];
+  const subs=[[],[]];
 
-  let currentTeam=0;
-  for(const player of players){
-    const skaters=teams[currentTeam].filter(p=>!p.includes("(G)")).length;
-    if(skaters<teamSize){ teams[currentTeam].push(player); } else { subsPerTeam[currentTeam].push(player); }
-    currentTeam=(currentTeam+1)%numTeams;
+  /* goalies distributed to teams */
+  g.forEach((goalie,i)=>teams[i].push(goalie+" (G)"));
+
+  let curr=0;
+  for(const p of players){
+    const count=teams[curr].filter(x=>!x.includes("(G)")).length;
+    if(count<size){
+      teams[curr].push(p);
+    } else {
+      subs[curr].push(p);
+    }
+    curr=(curr+1)%2;
   }
-  renderTeams(teams,teamSize,subsPerTeam);
 
-  toolbar.style.display=document.getElementById("output").innerText.trim()?"flex":"none";
-  if(!navigator.share) document.getElementById("shareTeamsBtn").style.display="none";
+  renderTeams(teams,subs);
 }
 
-function renderTeams(teams, teamSize, subsPerTeam){
-  const teamNames=["The Five-Hole Fiddlers","Goal Diggers","Ball Blazers","Stick Flickers","The Mighty Dangles","Deez Sticks","Floor Fury","The Dirty Dekes","Stickflix and Chill","The Deflectors","Ballz Deep","Just the Tip-Ins","The Slap and Tickles"];
-  shuffle(teamNames);
+function renderTeams(teams, subs){
   const out=document.getElementById("output");
   out.innerHTML="";
 
   teams.forEach((team,i)=>{
-    const displayName=teamNames[i%teamNames.length];
-    let goalie=null;
-    let playersOnly=team.slice();
-    if(playersOnly[0] && playersOnly[0].includes("(G)")){ goalie=playersOnly[0]; playersOnly=playersOnly.slice(1); }
-    const substitutes=subsPerTeam[i]||[];
-    const goalieTop=i%2===0;
-    let topSlot, midLeft, midRight, bottomSlot;
-    if(goalieTop){ topSlot=goalie; midLeft=playersOnly[0]||""; midRight=playersOnly[1]||""; bottomSlot=playersOnly[2]||""; }
-    else { topSlot=playersOnly[0]||""; midLeft=playersOnly[1]||""; midRight=playersOnly[2]||""; bottomSlot=goalie; }
 
-    const cardHtml=`<div class="team">
-      <div class="team-title">${displayName}</div>
+    let goalie=null;
+    let players=[...team];
+
+    if(players[0] && players[0].includes("(G)")){
+      goalie=players[0];
+      players=players.slice(1);
+    }
+
+    const html=`
+    <div class="team">
+      <div class="team-title">Team ${i+1}</div>
       <div class="formation-container">
         <div class="formation-layout">
-          ${centeredRow(topSlot)}
-          ${twoAcrossRow(midLeft,midRight)}
-          ${centeredRow(bottomSlot)}
+          ${centeredRow(goalie)}
+          ${twoAcrossRow(players[0]||"",players[1]||"")}
+          ${centeredRow(players[2]||"")}
         </div>
+
         <div class="subs-section">
-          <div style="font-weight:bold;text-align:center;margin-bottom:8px;">Subs</div>
-          ${substitutes.length===0?`<div style="text-align:center;">None</div>`:substitutes.map(s=>`<div class="sub-card">${formatPlayer(s)}</div>`).join("")}
+          <div style="text-align:center;font-weight:bold;margin-bottom:6px;">Subs</div>
+          ${subs[i].length ? subs[i].map(s=>`<div class="sub-card">${formatPlayer(s)}</div>`).join("") : `<div style="text-align:center;">None</div>`}
         </div>
       </div>
     </div>`;
-    out.insertAdjacentHTML('beforeend',cardHtml);
+
+    out.insertAdjacentHTML("beforeend",html);
   });
-}
-
-function centeredRow(player){ return player?`<div class="row-center"><div class="player-icon"></div><div class="player-name">${formatPlayer(player)}</div></div>`:`<div class="row-center"><div style="height:46px"></div></div>`; }
-function twoAcrossRow(left,right){ return `<div class="row-two"><div class="player-block"><div class="player-icon"></div><div class="player-name">${formatPlayer(left)}</div></div><div class="player-block"><div class="player-icon"></div><div class="player-name">${formatPlayer(right)}</div></div></div>`; }
-function formatPlayer(p){ if(!p)return""; return p.includes("(G)")?`🧤 ${p.replace("(G)","").trim()}`:p; }
-
-const toolbar=document.getElementById("exportToolbar");
-function saveTeamsAsImage(){
-  const output=document.getElementById("output");
-  if(!output.innerText.trim()){alert("No teams to save yet!"); return;}
-  html2canvas(output,{backgroundColor:'#f9f9f9',scale:2}).then(canvas=>{ const link=document.createElement("a"); link.download="floorball_teams.png"; link.href=canvas.toDataURL("image/png"); link.click(); });
-}
-function shareTeams(){
-  const output=document.getElementById("output").innerText.trim();
-  if(!output){alert("No teams to share yet!");return;}
-  if(navigator.share){ navigator.share({title:"Floorball Teams",text:output}).catch(err=>console.log("Share cancelled:",err)); }
-  else { alert("Sharing not supported on this device/browser. Try saving instead."); }
 }
 
 window.addEventListener("DOMContentLoaded",()=>{
   createPlayerChips();
   createGoalieChips();
-  updateClearButtonVisibility();
-  document.getElementById("names").addEventListener("input", updateClearButtonVisibility);
+  updateClear();
 });
 </script>
+
 </body>
 </html>
