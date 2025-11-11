@@ -121,7 +121,6 @@
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-
 <script>
 /* -----------------------------
    Data + Chips
@@ -274,7 +273,7 @@ function shareTeams(){
 window.addEventListener("DOMContentLoaded",()=>{
   createPlayerChips();
   createGoalieChips();
-  document.getElementById("names").addEventListener("input",updateTextareaFromSelection);
+  // Removed input listener to allow free typing
   updateClearButtonVisibility();
 });
 </script>
