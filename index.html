@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<title>Floorball Team Picker — Final with Team Sheet</title>
+<title>Floorball Team Picker — Full Version</title>
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <style>
 /* --- Base Styles --- */
@@ -21,7 +21,7 @@ button { margin-top:14px; width:100%; padding:12px; font-size:1.1rem; background
 button:hover { background:#2b3a7d; }
 
 .chips-container { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
-.chip { padding:8px 14px; background:#e0e0e0; border-radius:20px; cursor:pointer; transition:0.2s; user-select:none; }
+.chip { padding:8px 14px; background:#e0e0e0; border-radius:20px; cursor:pointer; transition:0.2s; user-select:none; display:flex; align-items:center; gap:6px; }
 .chip.selected { background:#3a52a3; color:white; }
 
 /* --- Team Card --- */
@@ -46,6 +46,11 @@ button:hover { background:#2b3a7d; }
   .formation-layout { width:100%; }
   .subs-section { width:100%; }
 }
+
+/* Floorball icon button in chips */
+.chip .icon-btn {
+  width:18px; height:18px; background:url('https://img.icons8.com/ios-filled/50/stick-figure.png') no-repeat center center; background-size:contain; cursor:pointer;
+}
 </style>
 </head>
 <body>
@@ -68,6 +73,8 @@ button:hover { background:#2b3a7d; }
 <input type="number" id="teamSize" placeholder="3">
 
 <button onclick="generateTeams()">Generate Teams</button>
+<button onclick="resetSelection()">Reset Selection</button>
+<button onclick="saveTeams()">Save & Share</button>
 
 <h2>Teams:</h2>
 <div id="output"></div>
@@ -80,8 +87,9 @@ const commonPlayers = ["Brunchie", "Colin W-B", "Nabber", "Ben", "Bill", "Ron", 
 const goalies = ["Colin D", "Sam", "ClothGimp"];
 
 document.addEventListener("DOMContentLoaded", () => {
-  createChips(commonPlayers, "playerChips", togglePlayer);
-  createChips(goalies, "goalieChips", toggleGoalie);
+  createChips(commonPlayers, "playerChips", togglePlayer, true);
+  createChips(goalies, "goalieChips", toggleGoalie, false);
+  loadFromURL();
 });
 
 /* -----------------------------
@@ -105,13 +113,22 @@ function dedupePreserveOrder(arr) {
 /* -----------------------------
    Chips
 -------------------------------- */
-function createChips(list, containerId, handler) {
+function createChips(list, containerId, handler, withIcon) {
   const container = document.getElementById(containerId);
   container.innerHTML = "";
   list.forEach(name => {
     const chip = document.createElement("div");
     chip.className = "chip";
     chip.textContent = name;
+    if (withIcon) {
+      const icon = document.createElement("div");
+      icon.className = "icon-btn";
+      icon.onclick = e => {
+        e.stopPropagation();
+        alert(name + " marked with floorball icon!"); // Placeholder action
+      };
+      chip.appendChild(icon);
+    }
     chip.onclick = () => handler(name, chip);
     container.appendChild(chip);
   });
@@ -128,7 +145,7 @@ function toggleGoalie(name, chip) { chip.classList.toggle("selected"); }
 -------------------------------- */
 function getSelectedPlayersFromChips() {
   return Array.from(document.querySelectorAll("#playerChips .chip.selected"))
-    .map(c => normalizeName(c.textContent));
+    .map(c => normalizeName(c.childNodes[0].textContent));
 }
 
 function getPlayersFromTextarea() {
@@ -216,6 +233,34 @@ function generateTeams() {
   }
 
   renderTeams(teams, teamSize, subsPerTeam);
+}
+
+/* -----------------------------
+   Reset selection
+-------------------------------- */
+function resetSelection() {
+  document.getElementById("names").value = "";
+  document.getElementById("teamSize").value = "";
+  document.querySelectorAll(".chip").forEach(c => c.classList.remove("selected"));
+  document.getElementById("output").innerHTML = "";
+}
+
+/* -----------------------------
+   Save & Share
+-------------------------------- */
+function saveTeams() {
+  const names = encodeURIComponent(document.getElementById("names").value);
+  const size = document.getElementById("teamSize").value;
+  const url = `${window.location.origin}${window.location.pathname}?names=${names}&size=${size}`;
+  prompt("Share this URL:", url);
+}
+
+function loadFromURL() {
+  const params = new URLSearchParams(window.location.search);
+  const names = params.get("names");
+  const size = params.get("size");
+  if (names) document.getElementById("names").value = decodeURIComponent(names);
+  if (size) document.getElementById("teamSize").value = size;
 }
 
 /* -----------------------------
