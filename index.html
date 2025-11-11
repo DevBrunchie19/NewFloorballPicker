@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<title>Floorball Team Picker</title>
+<title>Floorball Team Picker — Fixed Final</title>
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <style>
 /* --- Base Styles --- */
@@ -173,14 +173,13 @@ function selectTeamSize(size, chip) {
 }
 
 /* -----------------------------
-   Team generation
-   NOTE: when goalies are selected we reserve one slot per team
-         for the goalie so main roster size (teamSize) is kept.
+   Team generation — UPDATED CORRECT APPROACH
 -------------------------------- */
 function generateTeams() {
   let players = buildFinalPlayerPool();
   const selectedGoalies = getSelectedGoalies();
 
+  // Remove goalies from the main player pool
   if (selectedGoalies.length) {
     const goalieSet = new Set(selectedGoalies.map(g => g.toLowerCase()));
     players = players.filter(p => !goalieSet.has(p.toLowerCase()));
@@ -192,52 +191,32 @@ function generateTeams() {
     return;
   }
 
-  const pool = players.slice();
-  shuffle(pool);
+  shuffle(players);
 
-  // If goalies are being assigned, reserve one slot per team for the goalie.
-  // skaterSlots = how many non-goalie players should be assigned as main per team.
-  const skaterSlots = (selectedGoalies.length ? teamSize - 1 : teamSize);
-  if (skaterSlots < 1) {
-    alert("Team size must be at least 2 when assigning goalies.");
-    return;
-  }
-
-  // number of teams is based on how many full skater groups we can make
-  const numTeams = Math.floor(pool.length / skaterSlots);
-  if (numTeams === 0) {
-    document.getElementById("output").innerHTML = "<p>Not enough players for chosen team size.</p>";
-    return;
-  }
-
-  // create empty teams and a substitutes array per team
+  // --- Correct approach: always 2 teams ---
+  const numTeams = 2;
   const teams = Array.from({ length: numTeams }, () => []);
   const subsPerTeam = Array.from({ length: numTeams }, () => []);
 
-  // Deal main skater spots first: give each team exactly skaterSlots players
-  for (let t = 0; t < numTeams; t++) {
-    for (let s = 0; s < skaterSlots; s++) {
-      const p = pool.shift();
-      if (p !== undefined) teams[t].push(p);
-    }
-  }
-
-  // Any remaining players become substitutes — distribute round-robin into subsPerTeam
-  let si = 0;
-  while (pool.length) {
-    subsPerTeam[si % numTeams].push(pool.shift());
-    si++;
-  }
-
-  // Assign selected goalies, rotating if more teams than goalies (or fewer)
-  teams.forEach((team, i) => {
+  // Assign goalies (if any) one per team
+  for (let i = 0; i < numTeams; i++) {
     if (selectedGoalies.length) {
       const g = selectedGoalies[i % selectedGoalies.length];
-      team.unshift(g + " (G)");
+      teams[i].push(g + " (G)");
     }
-  });
+  }
 
-  // Render, passing substitutes per team so they are shown only as subs (not main)
+  // Assign main players to each team until teamSize is reached
+  for (let i = 0; i < players.length; i++) {
+    const teamIndex = i % numTeams;
+    if (teams[teamIndex].length < teamSize) {
+      teams[teamIndex].push(players[i]);
+    } else {
+      // Extra players become substitutes
+      subsPerTeam[teamIndex].push(players[i]);
+    }
+  }
+
   renderTeams(teams, teamSize, subsPerTeam);
 }
 
@@ -258,7 +237,6 @@ function renderTeams(teams, teamSize, subsPerTeam) {
   teams.forEach((team, i) => {
     const displayName = teamNames[i % teamNames.length];
 
-    // extract goalie if present at index 0
     let goalie = null;
     let playersOnly = team.slice();
     if (playersOnly.length && playersOnly[0] && playersOnly[0].includes("(G)")) {
@@ -266,7 +244,6 @@ function renderTeams(teams, teamSize, subsPerTeam) {
       playersOnly = playersOnly.slice(1);
     }
 
-    // ensure at least four main formation players exist (fill with empty if not)
     const mainPlayers = [
       playersOnly[0] || "",
       playersOnly[1] || "",
@@ -274,12 +251,10 @@ function renderTeams(teams, teamSize, subsPerTeam) {
       playersOnly[3] || ""
     ];
 
-    // substitutes: use the subs we prepared earlier for that team (guaranteed not to be part of main)
     const substitutes = (subsPerTeam && subsPerTeam[i]) ? subsPerTeam[i].slice() : [];
 
     const goalieTop = i % 2 === 0;
 
-    // determine which items go to slots
     const topSlot = goalieTop ? goalie : mainPlayers[0];
     const midLeft  = mainPlayers[1];
     const midRight = mainPlayers[2];
