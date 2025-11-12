@@ -68,14 +68,33 @@
 
     /* --- Team Sheet Styling --- */
     .team-title { font-size:1.2rem; font-weight:bold; text-align:center; margin-bottom:10px; }
-    .formation-container { display:flex; gap:20px; justify-content:space-between; align-items:flex-start; }
-    .formation-layout { width:75%; display:flex; flex-direction:column; align-items:center; gap:20px; }
-    .subs-section { width:25%; min-width:120px; background:#fafafa; border-radius:10px; padding:10px; border:1px solid #ddd; height:fit-content; }
-    .sub-card { padding:6px 10px; border:1px solid #ccc; border-radius:6px; background:#fff; margin-bottom:6px; }
+
+    /* ✅ Formation now takes full width */
+    .formation-container { display:flex; flex-direction:column; align-items:center; width:100%; }
+    .formation-layout { width:100%; display:flex; flex-direction:column; align-items:center; gap:20px; }
+
+    /* ✅ Subs now centered below */
+    .subs-section {
+      width:100%;
+      background:#fafafa;
+      border-radius:10px;
+      padding:10px;
+      border:1px solid #ddd;
+      margin-top:16px;
+      text-align:center;
+    }
+
+    .sub-card {
+      padding:6px 10px;
+      border:1px solid #ccc;
+      border-radius:6px;
+      background:#fff;
+      margin:6px auto;
+      display:inline-block;
+    }
+
     .row-center { display:flex; flex-direction:column; align-items:center; }
     .row-two { width:100%; display:flex; justify-content:space-between; }
-
-    /* ✅ NEW for 5-player layout */
     .row-three { width:100%; display:flex; justify-content:space-around; }
 
     .player-block { display:flex; flex-direction:column; align-items:center; }
@@ -100,7 +119,6 @@
       background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="%23f34974"><path d="M12 2a5 5 0 100 10 5 5 0 000-10zm0 12c-4.42 0-8 2.69-8 6v2h16v-2c0-3.31-3.58-6-8-6z"/></svg>');
     }
 
-    /* ✅ Always center goalies visually */
     .row-center .goalie, .row-two .goalie, .row-three .goalie {
       align-self: center;
     }
@@ -108,9 +126,7 @@
     .player-name { margin-top:6px; font-weight:600; text-align:center; }
 
     @media (max-width:640px) {
-      .formation-container { flex-direction:column; }
-      .formation-layout { width:100%; }
-      .subs-section { width:100%; }
+      .formation-layout { gap:16px; }
     }
   </style>
 </head>
@@ -151,254 +167,86 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
-const commonPlayers = ["Brunchie","Colin W-B","Nabber","Ben","Bill","Ron","Eugene"];
-const goalies = ["Colin D","Sam","ClothGimp"];
+const commonPlayers=["Brunchie","Colin W-B","Nabber","Ben","Bill","Ron","Eugene"];
+const goalies=["Colin D","Sam","ClothGimp"];
 
-function createPlayerChips() { createChips(commonPlayers, "playerChips", togglePlayer); }
-function createGoalieChips() { createChips(goalies, "goalieChips", toggleGoalie); }
+function createPlayerChips(){createChips(commonPlayers,"playerChips",togglePlayer);}
+function createGoalieChips(){createChips(goalies,"goalieChips",toggleGoalie);}
+function createChips(list,containerId,handler){const c=document.getElementById(containerId);c.innerHTML="";list.forEach(n=>{const chip=document.createElement("div");chip.className="chip";chip.textContent=n;chip.onclick=()=>handler(n,chip);c.appendChild(chip);});}
+function togglePlayer(name,chip){const t=document.getElementById("names");let n=t.value.split(",").map(x=>x.trim()).filter(Boolean);if(n.includes(name)){n=n.filter(x=>x!==name);chip.classList.remove("selected");}else{n.push(name);chip.classList.add("selected");}t.value=n.join(", ");updateClearButtonVisibility();}
+function toggleGoalie(name,chip){chip.classList.toggle("selected");updateClearButtonVisibility();}
+function buildFinalPlayerPool(){return document.getElementById("names").value.split(",").map(n=>n.trim()).filter(Boolean);}
+function getSelectedGoalies(){return Array.from(document.querySelectorAll("#goalieChips .chip.selected")).map(c=>c.textContent.trim());}
+function selectTeamSize(size,chip){document.getElementById("teamSize").value=size;document.querySelectorAll(".team-size-container .chip").forEach(c=>c.classList.remove("selected"));chip.classList.add("selected");}
+function clearAllPlayers(){document.getElementById("names").value="";document.querySelectorAll("#playerChips .chip, #goalieChips .chip").forEach(c=>c.classList.remove("selected"));updateClearButtonVisibility();}
+function updateClearButtonVisibility(){const has=buildFinalPlayerPool().length>0||getSelectedGoalies().length>0;document.getElementById("clearChipsBtn").classList.toggle("visible",has);}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}}
+function generateTeams(){let players=buildFinalPlayerPool();const selectedGoalies=getSelectedGoalies();const teamSize=parseInt(document.getElementById("teamSize").value,10);if(!teamSize||teamSize<1){alert("Enter valid team size.");return;}if(selectedGoalies.length){const gSet=new Set(selectedGoalies.map(g=>g.toLowerCase()));players=players.filter(p=>!gSet.has(p.toLowerCase()));}shuffle(players);const numTeams=2;const teams=Array.from({length:numTeams},()=>[]);const subsPerTeam=Array.from({length:numTeams},()=>[]);for(let i=0;i<numTeams;i++){if(selectedGoalies.length){teams[i].push(selectedGoalies[i%selectedGoalies.length]+" (G)");}}let currentTeam=0;for(const player of players){const skaters=teams[currentTeam].filter(p=>!p.includes("(G)")).length;if(skaters<teamSize){teams[currentTeam].push(player);}else{subsPerTeam[currentTeam].push(player);}currentTeam=(currentTeam+1)%numTeams;}renderTeams(teams,teamSize,subsPerTeam);toolbar.style.display=document.getElementById("output").innerText.trim()?"flex":"none";if(!navigator.share)document.getElementById("shareTeamsBtn").style.display="none";}
 
-function createChips(list, containerId, handler){
-  const container=document.getElementById(containerId);
-  container.innerHTML="";
-  list.forEach(name=>{
-    const chip=document.createElement("div");
-    chip.className="chip";
-    chip.textContent=name;
-    chip.onclick=()=>handler(name, chip);
-    container.appendChild(chip);
-  });
-}
-
-function togglePlayer(name, chip){
-  const textarea=document.getElementById("names");
-  let names=textarea.value.split(",").map(n=>n.trim()).filter(Boolean);
-
-  if(names.includes(name)){
-    names=names.filter(n=>n!==name);
-    chip.classList.remove("selected");
-  } else {
-    names.push(name);
-    chip.classList.add("selected");
-  }
-
-  textarea.value=names.join(", ");
-  updateClearButtonVisibility();
-}
-
-function toggleGoalie(name, chip){
-  chip.classList.toggle("selected");
-  updateClearButtonVisibility();
-}
-
-function buildFinalPlayerPool(){
-  const typed=document.getElementById("names").value.split(",").map(n=>n.trim()).filter(Boolean);
-  return typed;
-}
-
-function getSelectedGoalies(){
-  return Array.from(document.querySelectorAll("#goalieChips .chip.selected")).map(c=>c.textContent.trim());
-}
-
-function selectTeamSize(size, chip){
-  document.getElementById("teamSize").value=size;
-  document.querySelectorAll(".team-size-container .chip").forEach(c=>c.classList.remove("selected"));
-  chip.classList.add("selected");
-}
-
-function clearAllPlayers(){
-  document.getElementById("names").value="";
-  document.querySelectorAll("#playerChips .chip, #goalieChips .chip").forEach(c=>c.classList.remove("selected"));
-  updateClearButtonVisibility();
-}
-
-function updateClearButtonVisibility(){
-  const hasPlayers=buildFinalPlayerPool().length>0 || getSelectedGoalies().length>0;
-  document.getElementById("clearChipsBtn").classList.toggle("visible", hasPlayers);
-}
-
-function shuffle(arr){for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}}
-
-function generateTeams(){
-  let players=buildFinalPlayerPool();
-  const selectedGoalies=getSelectedGoalies();
-  const teamSize=parseInt(document.getElementById("teamSize").value,10);
-  if(!teamSize||teamSize<1){alert("Enter valid team size.");return;}
-
-  if(selectedGoalies.length){ const gSet=new Set(selectedGoalies.map(g=>g.toLowerCase())); players=players.filter(p=>!gSet.has(p.toLowerCase())); }
-
-  shuffle(players);
-  const numTeams=2;
-  const teams=Array.from({length:numTeams},()=>[]);
-  const subsPerTeam=Array.from({length:numTeams},()=>[]);
-
-  for(let i=0;i<numTeams;i++){ if(selectedGoalies.length){ teams[i].push(selectedGoalies[i%selectedGoalies.length]+" (G)"); } }
-
-  let currentTeam=0;
-  for(const player of players){
-    const skaters=teams[currentTeam].filter(p=>!p.includes("(G)")).length;
-    if(skaters<teamSize){ teams[currentTeam].push(player); } else { subsPerTeam[currentTeam].push(player); }
-    currentTeam=(currentTeam+1)%numTeams;
-  }
-  renderTeams(teams,teamSize,subsPerTeam);
-
-  toolbar.style.display=document.getElementById("output").innerText.trim()?"flex":"none";
-  if(!navigator.share) document.getElementById("shareTeamsBtn").style.display="none";
-}
-
-/* ✅ UPDATED renderTeams() with 5-player layout support */
-function renderTeams(teams, teamSize, subsPerTeam) {
-  const teamNames = [
-    "The Five-Hole Fiddlers","Goal Diggers","Ball Blazers","Stick Flickers",
-    "The Mighty Dangles","Deez Sticks","Floor Fury","The Dirty Dekes",
-    "Stickflix and Chill","The Deflectors","Ballz Deep","Just the Tip-Ins",
-    "The Slap and Tickles"
-  ];
+function renderTeams(teams,teamSize,subsPerTeam){
+  const teamNames=["The Five-Hole Fiddlers","Goal Diggers","Ball Blazers","Stick Flickers","The Mighty Dangles","Deez Sticks","Floor Fury","The Dirty Dekes","Stickflix and Chill","The Deflectors","Ballz Deep","Just the Tip-Ins","The Slap and Tickles"];
   shuffle(teamNames);
-  const out = document.getElementById("output");
-  out.innerHTML = "";
+  const out=document.getElementById("output");
+  out.innerHTML="";
+  teams.forEach((team,i)=>{
+    const displayName=teamNames[i%teamNames.length];
+    let goalie=null;let playersOnly=team.slice();
+    if(playersOnly[0]&&playersOnly[0].includes("(G)")){goalie=playersOnly[0];playersOnly=playersOnly.slice(1);}
+    const subs=subsPerTeam[i]||[];
+    const goalieTop=i%2===0;
 
-  teams.forEach((team, i) => {
-    const displayName = teamNames[i % teamNames.length];
-    let goalie = null;
-    let playersOnly = team.slice();
-    if (playersOnly[0] && playersOnly[0].includes("(G)")) {
-      goalie = playersOnly[0];
-      playersOnly = playersOnly.slice(1);
-    }
-    const substitutes = subsPerTeam[i] || [];
-    const goalieTop = i % 2 === 0;
-
-    if (teamSize === 3) {
-      let topSlot, midLeft, midRight, bottomSlot;
-      if (goalieTop) {
-        topSlot = goalie;
-        midLeft = playersOnly[0] || "";
-        midRight = playersOnly[1] || "";
-        bottomSlot = playersOnly[2] || "";
-      } else {
-        topSlot = playersOnly[0] || "";
-        midLeft = playersOnly[1] || "";
-        midRight = playersOnly[2] || "";
-        bottomSlot = goalie;
-      }
-
-      const cardHtml = `
-        <div class="team">
-          <div class="team-title">${displayName}</div>
-          <div class="formation-container">
-            <div class="formation-layout">
-              ${centeredRow(topSlot)}
-              ${twoAcrossRow(midLeft, midRight)}
-              ${centeredRow(bottomSlot)}
-            </div>
-            <div class="subs-section">
-              <div style="font-weight:bold;text-align:center;margin-bottom:8px;">Subs</div>
-              ${substitutes.length===0?`<div style="text-align:center;">None</div>`:substitutes.map(s=>`<div class="sub-card">${formatPlayer(s)}</div>`).join("")}
-            </div>
+    if(teamSize===3){
+      let top,midL,midR,bottom;
+      if(goalieTop){top=goalie;midL=playersOnly[0];midR=playersOnly[1];bottom=playersOnly[2];}
+      else{top=playersOnly[0];midL=playersOnly[1];midR=playersOnly[2];bottom=goalie;}
+      out.insertAdjacentHTML("beforeend",`
+      <div class="team">
+        <div class="team-title">${displayName}</div>
+        <div class="formation-container">
+          <div class="formation-layout">
+            ${centeredRow(top)}${twoAcrossRow(midL,midR)}${centeredRow(bottom)}
           </div>
-        </div>`;
-      out.insertAdjacentHTML('beforeend', cardHtml);
+          <div class="subs-section">
+            <div style="font-weight:bold;">Subs</div>
+            ${subs.length?subs.map(s=>`<div class="sub-card">${formatPlayer(s)}</div>`).join(""):`<div>None</div>`}
+          </div>
+        </div>
+      </div>`);
       return;
     }
 
-    if (teamSize === 5) {
-      const p = [...playersOnly];
-      const g = goalie ? goalie : "";
-
-      let layoutHtml = "";
-
-      if (goalieTop) {
-        layoutHtml = `
-          ${centeredRow(g)}
-          ${twoAcrossRow(p[0], p[1])}
-          ${threeAcrossRow(p[2], p[3], p[4])}
-        `;
-      } else {
-        layoutHtml = `
-          ${threeAcrossRow(p[0], p[1], p[2])}
-          ${twoAcrossRow(p[3], p[4])}
-          ${centeredRow(g)}
-        `;
-      }
-
-      const cardHtml = `
-        <div class="team">
-          <div class="team-title">${displayName}</div>
-          <div class="formation-container">
-            <div class="formation-layout">
-              ${layoutHtml}
-            </div>
-            <div class="subs-section">
-              <div style="font-weight:bold;text-align:center;margin-bottom:8px;">Subs</div>
-              ${substitutes.length===0?`<div style="text-align:center;">None</div>`:substitutes.map(s=>`<div class="sub-card">${formatPlayer(s)}</div>`).join("")}
-            </div>
+    if(teamSize===5){
+      const p=[...playersOnly];const g=goalie||"";
+      let layoutHtml=goalieTop?`
+        ${centeredRow(g)}${twoAcrossRow(p[0],p[1])}${threeAcrossRow(p[2],p[3],p[4])}
+      `:`
+        ${threeAcrossRow(p[0],p[1],p[2])}${twoAcrossRow(p[3],p[4])}${centeredRow(g)}
+      `;
+      out.insertAdjacentHTML("beforeend",`
+      <div class="team">
+        <div class="team-title">${displayName}</div>
+        <div class="formation-container">
+          <div class="formation-layout">${layoutHtml}</div>
+          <div class="subs-section">
+            <div style="font-weight:bold;">Subs</div>
+            ${subs.length?subs.map(s=>`<div class="sub-card">${formatPlayer(s)}</div>`).join(""):`<div>None</div>`}
           </div>
-        </div>`;
-      out.insertAdjacentHTML('beforeend', cardHtml);
+        </div>
+      </div>`);
     }
   });
 }
 
-/* ✅ new helper */
-function threeAcrossRow(left, middle, right) {
-  return `
-    <div class="row-three">
-      <div class="player-block">
-        <div class="player-icon${left && left.includes('(G)') ? ' goalie' : ''}"></div>
-        <div class="player-name">${formatPlayer(left)}</div>
-      </div>
-      <div class="player-block">
-        <div class="player-icon${middle && middle.includes('(G)') ? ' goalie' : ''}"></div>
-        <div class="player-name">${formatPlayer(middle)}</div>
-      </div>
-      <div class="player-block">
-        <div class="player-icon${right && right.includes('(G)') ? ' goalie' : ''}"></div>
-        <div class="player-name">${formatPlayer(right)}</div>
-      </div>
-    </div>`;
-}
-
-function centeredRow(player){ 
-  return player
-    ? `<div class="row-center"><div class="player-icon${player.includes('(G)')?' goalie':''}"></div><div class="player-name">${formatPlayer(player)}</div></div>`
-    : `<div class="row-center"><div style="height:46px"></div></div>`;
-}
-
-function twoAcrossRow(left,right){
-  return `
-    <div class="row-two">
-      <div class="player-block">
-        <div class="player-icon${left && left.includes('(G)')?' goalie':''}"></div>
-        <div class="player-name">${formatPlayer(left)}</div>
-      </div>
-      <div class="player-block">
-        <div class="player-icon${right && right.includes('(G)')?' goalie':''}"></div>
-        <div class="player-name">${formatPlayer(right)}</div>
-      </div>
-    </div>`;
-}
-
-function formatPlayer(p){ if(!p)return""; return p.includes("(G)")?`🥅 ${p.replace("(G)","").trim()}`:p; }
+function threeAcrossRow(l,m,r){return `<div class="row-three">${[l,m,r].map(x=>`
+<div class="player-block"><div class="player-icon${x&&x.includes('(G)')?' goalie':''}"></div><div class="player-name">${formatPlayer(x)}</div></div>`).join("")}</div>`;}
+function centeredRow(p){return p?`<div class="row-center"><div class="player-icon${p.includes('(G)')?' goalie':''}"></div><div class="player-name">${formatPlayer(p)}</div></div>`:`<div class="row-center"><div style="height:46px"></div></div>`;}
+function twoAcrossRow(l,r){return `<div class="row-two"><div class="player-block"><div class="player-icon${l&&l.includes('(G)')?' goalie':''}"></div><div class="player-name">${formatPlayer(l)}</div></div><div class="player-block"><div class="player-icon${r&&r.includes('(G)')?' goalie':''}"></div><div class="player-name">${formatPlayer(r)}</div></div></div>`;}
+function formatPlayer(p){if(!p)return"";return p.includes("(G)")?`🥅 ${p.replace("(G)","").trim()}`:p;}
 
 const toolbar=document.getElementById("exportToolbar");
-function saveTeamsAsImage(){
-  const output=document.getElementById("output");
-  if(!output.innerText.trim()){alert("No teams to save yet!"); return;}
-  html2canvas(output,{backgroundColor:'#f9f9f9',scale:2}).then(canvas=>{ const link=document.createElement("a"); link.download="floorball_teams.png"; link.href=canvas.toDataURL("image/png"); link.click(); });
-}
-function shareTeams(){
-  const output=document.getElementById("output").innerText.trim();
-  if(!output){alert("No teams to share yet!");return;}
-  if(navigator.share){ navigator.share({title:"Floorball Teams",text:output}).catch(err=>console.log("Share cancelled:",err)); }
-  else { alert("Sharing not supported on this device/browser. Try saving instead."); }
-}
-
-window.addEventListener("DOMContentLoaded",()=>{
-  createPlayerChips();
-  createGoalieChips();
-  updateClearButtonVisibility();
-  document.getElementById("names").addEventListener("input", updateClearButtonVisibility);
-});
+function saveTeamsAsImage(){const o=document.getElementById("output");if(!o.innerText.trim()){alert("No teams to save yet!");return;}html2canvas(o,{backgroundColor:'#f9f9f9',scale:2}).then(c=>{const l=document.createElement("a");l.download="floorball_teams.png";l.href=c.toDataURL("image/png");l.click();});}
+function shareTeams(){const o=document.getElementById("output").innerText.trim();if(!o){alert("No teams to share yet!");return;}if(navigator.share){navigator.share({title:"Floorball Teams",text:o}).catch(e=>console.log("Share cancelled:",e));}else{alert("Sharing not supported on this device/browser. Try saving instead.");}}
+window.addEventListener("DOMContentLoaded",()=>{createPlayerChips();createGoalieChips();updateClearButtonVisibility();document.getElementById("names").addEventListener("input",updateClearButtonVisibility);});
 </script>
 </body>
 </html>
