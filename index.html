@@ -46,7 +46,7 @@
     .image-button:hover { transform: scale(1.1); }
     .image-button:active { transform: scale(0.95); }
     #buttonText { text-align:center; font-size:0.95rem; color:#555; margin-top:10px; }
-    .team { background: #fff; padding: 12px; margin: 10px 0; border-radius: 8px; border:1px solid #ddd; --team-colour: #3a52a3; }
+    .team { background: #fff; padding: 12px; margin: 10px 0; border-radius: 8px; border:1px solid #ddd; }
 
     .chips-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
     #clearChipsBtn {
@@ -99,43 +99,27 @@
 
     .player-block { display:flex; flex-direction:column; align-items:center; }
 
-    /* UPDATED PLAYER ICON (remove old embedded SVG) */
+    /* UPDATED PLAYER ICON for SVG shirt */
     .player-icon {
       width:80px;
       height:80px;
-      border:2px dashed rgb(0 0 0 / 0%)
+      border:3px solid #3a52a3;
       border-radius:50%;
       display:flex;
       align-items:center;
       justify-content:center;
       background-color:white;
-      overflow: visible; /* allow svg to render without being clipped */
+      overflow:hidden;
     }
 
     .player-icon.goalie {
-      border-color:#f34471;
+      border-color:#f34974;
     }
 
-    /* NEW: Shirt SVG styling */
     .shirt-icon {
       width:70%;
       height:70%;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      line-height:0;
-    }
-    /* ensure the injected SVG scales, is centered and uses the team colour */
-    .shirt-icon svg {
-      width: 100%;
-      height: 100%;
       display:block;
-      preserveAspectRatio: xMidYMid meet;
-      color: var(--team-colour);
-    }
-    .shirt-icon svg [fill] {
-      /* make paths use the current color */
-      fill: currentColor;
     }
 
     .player-name { margin-top:6px; font-weight:600; text-align:center; }
@@ -147,21 +131,6 @@
 </head>
 <body>
 <h1>Floorball Team Picker</h1>
-
-<!-- Hidden inline SVG template (using your provided shape, cleaned to use currentColor and centered) -->
-<svg id="shirt-template" style="display:none" viewBox="0 0 295.526 295.526" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
-  <g fill="currentColor">
-    <path d="M147.763,44.074c12.801,0,23.858-8.162,27.83-20.169c-7.578,2.086-17.237,3.345-27.83,3.345
-      c-10.592,0-20.251-1.259-27.828-3.345C123.905,35.911,134.961,44.074,147.763,44.074z"/>
-    <path d="M295.158,58.839c-0.608-1.706-1.873-3.109-3.521-3.873l-56.343-26.01c-11.985-4.06-24.195-7.267-36.524-9.611
-      c-0.434-0.085-0.866-0.126-1.292-0.126c-3.052,0-5.785,2.107-6.465,5.197c-4.502,19.82-22.047,34.659-43.251,34.659
-      c-21.203,0-38.749-14.838-43.25-34.659c-0.688-3.09-3.416-5.197-6.466-5.197c-0.426,0-0.858,0.041-1.292,0.126
-      c-12.328,2.344-24.538,5.551-36.542,9.611L3.889,54.965c-1.658,0.764-2.932,2.167-3.511,3.873
-      c-0.599,1.726-0.491,3.589,0.353,5.217l24.46,48.272c1.145,2.291,3.474,3.666,5.938,3.666c0.636,0,1.281-0.092,1.917-0.283
-      l27.167-8.052v161.97c0,3.678,3.001,6.678,6.689,6.678h161.723c3.678,0,6.67-3.001,6.67-6.678V107.66l27.186,8.052
-      c0.636,0.191,1.28,0.283,1.915,0.283c2.459,0,4.779-1.375,5.94-3.666l24.469-48.272C295.629,62.428,295.747,60.565,295.158,58.839z"/>
-  </g>
-</svg>
 
 <div class="chips-header">
   <label>The usual suspects:</label>
@@ -242,34 +211,9 @@ function generateTeams(){
   if(!navigator.share)document.getElementById("shareTeamsBtn").style.display="none";
 }
 
-/* NEW — Randomised colour per team (returns HSL color string) */
-function randomTeamColour() {
-  const h = Math.floor(Math.random() * 360);
-  const s = 65; // saturation
-  const l = 48; // lightness
-  return `hsl(${h} ${s}% ${l}%)`;
-}
-
-/* helper: inject the inline SVG template into a .shirt-icon wrapper */
-function injectShirtsIntoTeam(teamEl) {
-  const template = document.getElementById('shirt-template');
-  if(!template) return;
-  const wrappers = teamEl.querySelectorAll('.shirt-icon');
-  wrappers.forEach(w => {
-    // clone the template SVG node (deep clone)
-    const clone = template.cloneNode(true);
-    // remove id from clone so duplicates don't share same id
-    clone.removeAttribute('id');
-    clone.style.display = 'block';
-    // ensure the svg has no width/height attributes that could break scaling
-    clone.removeAttribute('width');
-    clone.removeAttribute('height');
-    clone.setAttribute('preserveAspectRatio','xMidYMid meet');
-    // clear wrapper then append
-    w.innerHTML = '';
-    w.appendChild(clone);
-  });
-}
+/* Random colour + pattern generation per team */
+function randomColor(){return `#${Math.floor(Math.random()*16777215).toString(16).padStart(6,'0')}`;}
+function randomPattern(){const patterns=['solid','stripes-h','stripes-v','diagonal'];return patterns[Math.floor(Math.random()*patterns.length)];}
 
 function renderTeams(teams,teamSize,subsPerTeam){
   const teamNames=["The Five-Hole Fiddlers","Goal Diggers","Ball Blazers","Stick Flickers","The Mighty Dangles","Deez Sticks","Floor Fury","The Dirty Dekes","Stickflix and Chill","The Deflectors","Ballz Deep","Just the Tip-Ins","The Slap and Tickles"];
@@ -284,19 +228,23 @@ function renderTeams(teams,teamSize,subsPerTeam){
     const goalieTop=i%2===0;
     const subsVisible=subs.length>0?"visible":"";
 
-    /* NEW — unique shirt colour per team (set as a CSS variable) */
-    const colour = randomTeamColour();
+    /* Generate two random colours and a pattern per team */
+    const colour1=randomColor(), colour2=randomColor(), pattern=randomPattern();
+    let patternId='teamPattern';
+    if(pattern==='stripes-h') patternId='teamPatternStripesH';
+    else if(pattern==='stripes-v') patternId='teamPatternStripesV';
+    else if(pattern==='diagonal') patternId='teamPatternDiagonal';
 
     if(teamSize===3){
       let top,midL,midR,bottom;
       if(goalieTop){top=goalie;midL=playersOnly[0];midR=playersOnly[1];bottom=playersOnly[2];}
       else{top=playersOnly[0];midL=playersOnly[1];midR=playersOnly[2];bottom=goalie;}
       out.insertAdjacentHTML("beforeend",`
-      <div class="team" style="--team-colour:${colour}">
+      <div class="team" style="--colour1:${colour1};--colour2:${colour2}">
         <div class="team-title">${displayName}</div>
         <div class="formation-container">
           <div class="formation-layout">
-            ${centeredRow(top)}${twoAcrossRow(midL,midR)}${centeredRow(bottom)}
+            ${centeredRow(top,patternId)}${twoAcrossRow(midL,midR,patternId)}${centeredRow(bottom,patternId)}
           </div>
           <div class="subs-section ${subsVisible}">
             <div style="font-weight:bold;">Subs</div>
@@ -310,12 +258,12 @@ function renderTeams(teams,teamSize,subsPerTeam){
     if(teamSize===5){
       const p=[...playersOnly];const g=goalie||"";
       let layoutHtml=goalieTop?`
-        ${centeredRow(g)}${twoAcrossRow(p[0],p[1])}${threeAcrossRow(p[2],p[3],p[4])}
+        ${centeredRow(g,patternId)}${twoAcrossRow(p[0],p[1],patternId)}${threeAcrossRow(p[2],p[3],p[4],patternId)}
       `:`
-        ${threeAcrossRow(p[0],p[1],p[2])}${twoAcrossRow(p[3],p[4])}${centeredRow(g)}
+        ${threeAcrossRow(p[0],p[1],p[2],patternId)}${twoAcrossRow(p[3],p[4],patternId)}${centeredRow(g,patternId)}
       `;
       out.insertAdjacentHTML("beforeend",`
-      <div class="team" style="--team-colour:${colour}">
+      <div class="team" style="--colour1:${colour1};--colour2:${colour2}">
         <div class="team-title">${displayName}</div>
         <div class="formation-container">
           <div class="formation-layout">${layoutHtml}</div>
@@ -327,49 +275,112 @@ function renderTeams(teams,teamSize,subsPerTeam){
       </div>`);
     }
   });
-
-  // After we inserted all teams into the DOM, inject the inline SVGs into each team
-  document.querySelectorAll('.team').forEach(teamEl => {
-    // set the team's shirt colour on the injected SVGs via CSS variable (team already has inline style --team-colour)
-    const teamColour = teamEl.style.getPropertyValue('--team-colour') || '#3a52a3';
-    teamEl.style.setProperty('--team-colour', teamColour.trim());
-    injectShirtsIntoTeam(teamEl);
-  });
 }
 
-/* UPDATED — inserted placeholder div for inline SVG (no <img>) */
-
-function threeAcrossRow(l,m,r){return `
+/* Updated rows with inline SVG + dynamic pattern */
+function threeAcrossRow(l,m,r,patternId){return `
 <div class="row-three">
 ${[l,m,r].map(x=>`
   <div class="player-block">
     <div class="player-icon${x&&x.includes('(G)')?' goalie':''}">
-      <div class="shirt-icon"></div>
+      <svg class="shirt-icon" viewBox="0 0 295.526 295.526">
+        <defs>
+          <pattern id="p" patternUnits="userSpaceOnUse" width="40" height="40">
+            <rect width="40" height="40" fill="var(--colour1)" />
+            ${patternId!=='teamPattern'?patternId.includes('stripes')?`<rect width="20" height="40" fill="var(--colour2)"/>`:`<rect width="20" height="40" fill="var(--colour2)" transform="rotate(45 0 0)"/>`:''}
+          </pattern>
+        </defs>
+        <g fill="url(#p)">
+          <path d="M147.763,44.074c12.801,0,23.858-8.162,27.83-20.169c-7.578,2.086-17.237,3.345-27.83,3.345
+          c-10.592,0-20.251-1.259-27.828-3.345C123.905,35.911,134.961,44.074,147.763,44.074z"/>
+          <path d="M295.158,58.839c-0.608-1.706-1.873-3.109-3.521-3.873l-56.343-26.01c-11.985-4.06-24.195-7.267-36.524-9.611
+          c-0.434-0.085-0.866-0.126-1.292-0.126c-3.052,0-5.785,2.107-6.465,5.197c-4.502,19.82-22.047,34.659-43.251,34.659
+          c-21.203,0-38.749-14.838-43.25-34.659c-0.688-3.09-3.416-5.197-6.466-5.197c-0.426,0-0.858,0.041-1.292,0.126
+          c-12.328,2.344-24.538,5.551-36.542,9.611L3.889,54.965c-1.658,0.764-2.932,2.167-3.511,3.873
+          c-0.599,1.726-0.491,3.589,0.353,5.217l24.46,48.272c1.145,2.291,3.474,3.666,5.938,3.666c0.636,0,1.281-0.092,1.917-0.283
+          l27.167-8.052v161.97c0,3.678,3.001,6.678,6.689,6.678h161.723c3.678,0,6.67-3.001,6.67-6.678V107.66l27.186,8.052
+          c0.636,0.191,1.28,0.283,1.915,0.283c2.459,0,4.779-1.375,5.94-3.666l24.469-48.272C295.629,62.428,295.747,60.565,295.158,58.839z"/>
+        </g>
+      </svg>
     </div>
     <div class="player-name">${formatPlayer(x)}</div>
   </div>`).join("")}
 </div>`;}
 
-function centeredRow(p){return p?`
+function centeredRow(p,patternId){return p?`
 <div class="row-center">
   <div class="player-icon${p.includes('(G)')?' goalie':''}">
-    <div class="shirt-icon"></div>
+    <svg class="shirt-icon" viewBox="0 0 295.526 295.526">
+      <defs>
+        <pattern id="p" patternUnits="userSpaceOnUse" width="40" height="40">
+          <rect width="40" height="40" fill="var(--colour1)" />
+          ${patternId!=='teamPattern'?patternId.includes('stripes')?`<rect width="20" height="40" fill="var(--colour2)"/>`:`<rect width="20" height="40" fill="var(--colour2)" transform="rotate(45 0 0)"/>`:''}
+        </pattern>
+      </defs>
+      <g fill="url(#p)">
+        <path d="M147.763,44.074c12.801,0,23.858-8.162,27.83-20.169c-7.578,2.086-17.237,3.345-27.83,3.345
+        c-10.592,0-20.251-1.259-27.828-3.345C123.905,35.911,134.961,44.074,147.763,44.074z"/>
+        <path d="M295.158,58.839c-0.608-1.706-1.873-3.109-3.521-3.873l-56.343-26.01c-11.985-4.06-24.195-7.267-36.524-9.611
+        c-0.434-0.085-0.866-0.126-1.292-0.126c-3.052,0-5.785,2.107-6.465,5.197c-4.502,19.82-22.047,34.659-43.251,34.659
+        c-21.203,0-38.749-14.838-43.25-34.659c-0.688-3.09-3.416-5.197-6.466-5.197c-0.426,0-0.858,0.041-1.292,0.126
+        c-12.328,2.344-24.538,5.551-36.542,9.611L3.889,54.965c-1.658,0.764-2.932,2.167-3.511,3.873
+        c-0.599,1.726-0.491,3.589,0.353,5.217l24.46,48.272c1.145,2.291,3.474,3.666,5.938,3.666c0.636,0,1.281-0.092,1.917-0.283
+        l27.167-8.052v161.97c0,3.678,3.001,6.678,6.689,6.678h161.723c3.678,0,6.67-3.001,6.67-6.678V107.66l27.186,8.052
+        c0.636,0.191,1.28,0.283,1.915,0.283c2.459,0,4.779-1.375,5.94-3.666l24.469-48.272C295.629,62.428,295.747,60.565,295.158,58.839z"/>
+      </g>
+    </svg>
   </div>
   <div class="player-name">${formatPlayer(p)}</div>
 </div>`:
 `<div class="row-center"><div style="height:46px"></div></div>`;}
 
-function twoAcrossRow(l,r){return `
+function twoAcrossRow(l,r,patternId){return `
 <div class="row-two">
   <div class="player-block">
     <div class="player-icon${l&&l.includes('(G)')?' goalie':''}">
-      <div class="shirt-icon"></div>
+      <svg class="shirt-icon" viewBox="0 0 295.526 295.526">
+        <defs>
+          <pattern id="p" patternUnits="userSpaceOnUse" width="40" height="40">
+            <rect width="40" height="40" fill="var(--colour1)" />
+            ${patternId!=='teamPattern'?patternId.includes('stripes')?`<rect width="20" height="40" fill="var(--colour2)"/>`:`<rect width="20" height="40" fill="var(--colour2)" transform="rotate(45 0 0)"/>`:''}
+          </pattern>
+        </defs>
+        <g fill="url(#p)">
+          <path d="M147.763,44.074c12.801,0,23.858-8.162,27.83-20.169c-7.578,2.086-17.237,3.345-27.83,3.345
+          c-10.592,0-20.251-1.259-27.828-3.345C123.905,35.911,134.961,44.074,147.763,44.074z"/>
+          <path d="M295.158,58.839c-0.608-1.706-1.873-3.109-3.521-3.873l-56.343-26.01c-11.985-4.06-24.195-7.267-36.524-9.611
+          c-0.434-0.085-0.866-0.126-1.292-0.126c-3.052,0-5.785,2.107-6.465,5.197c-4.502,19.82-22.047,34.659-43.251,34.659
+          c-21.203,0-38.749-14.838-43.25-34.659c-0.688-3.09-3.416-5.197-6.466-5.197c-0.426,0-0.858,0.041-1.292,0.126
+          c-12.328,2.344-24.538,5.551-36.542,9.611L3.889,54.965c-1.658,0.764-2.932,2.167-3.511,3.873
+          c-0.599,1.726-0.491,3.589,0.353,5.217l24.46,48.272c1.145,2.291,3.474,3.666,5.938,3.666c0.636,0,1.281-0.092,1.917-0.283
+          l27.167-8.052v161.97c0,3.678,3.001,6.678,6.689,6.678h161.723c3.678,0,6.67-3.001,6.67-6.678V107.66l27.186,8.052
+          c0.636,0.191,1.28,0.283,1.915,0.283c2.459,0,4.779-1.375,5.94-3.666l24.469-48.272C295.629,62.428,295.747,60.565,295.158,58.839z"/>
+        </g>
+      </svg>
     </div>
     <div class="player-name">${formatPlayer(l)}</div>
   </div>
   <div class="player-block">
     <div class="player-icon${r&&r.includes('(G)')?' goalie':''}">
-      <div class="shirt-icon"></div>
+      <svg class="shirt-icon" viewBox="0 0 295.526 295.526">
+        <defs>
+          <pattern id="p" patternUnits="userSpaceOnUse" width="40" height="40">
+            <rect width="40" height="40" fill="var(--colour1)" />
+            ${patternId!=='teamPattern'?patternId.includes('stripes')?`<rect width="20" height="40" fill="var(--colour2)"/>`:`<rect width="20" height="40" fill="var(--colour2)" transform="rotate(45 0 0)"/>`:''}
+          </pattern>
+        </defs>
+        <g fill="url(#p)">
+          <path d="M147.763,44.074c12.801,0,23.858-8.162,27.83-20.169c-7.578,2.086-17.237,3.345-27.83,3.345
+          c-10.592,0-20.251-1.259-27.828-3.345C123.905,35.911,134.961,44.074,147.763,44.074z"/>
+          <path d="M295.158,58.839c-0.608-1.706-1.873-3.109-3.521-3.873l-56.343-26.01c-11.985-4.06-24.195-7.267-36.524-9.611
+          c-0.434-0.085-0.866-0.126-1.292-0.126c-3.052,0-5.785,2.107-6.465,5.197c-4.502,19.82-22.047,34.659-43.251,34.659
+          c-21.203,0-38.749-14.838-43.25-34.659c-0.688-3.09-3.416-5.197-6.466-5.197c-0.426,0-0.858,0.041-1.292,0.126
+          c-12.328,2.344-24.538,5.551-36.542,9.611L3.889,54.965c-1.658,0.764-2.932,2.167-3.511,3.873
+          c-0.599,1.726-0.491,3.589,0.353,5.217l24.46,48.272c1.145,2.291,3.474,3.666,5.938,3.666c0.636,0,1.281-0.092,1.917-0.283
+          l27.167-8.052v161.97c0,3.678,3.001,6.678,6.689,6.678h161.723c3.678,0,6.67-3.001,6.67-6.678V107.66l27.186,8.052
+          c0.636,0.191,1.28,0.283,1.915,0.283c2.459,0,4.779-1.375,5.94-3.666l24.469-48.272C295.629,62.428,295.747,60.565,295.158,58.839z"/>
+        </g>
+      </svg>
     </div>
     <div class="player-name">${formatPlayer(r)}</div>
   </div>
