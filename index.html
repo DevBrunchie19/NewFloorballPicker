@@ -1,16 +1,3 @@
-Done — I updated only the parts that needed changing so your inline SVG looks correct, is centered, not clipped, and each **team** gets a random colour. I kept every other line of your file the same unless it was required to make the SVG injection and colouring work.
-
-What I changed (minimal):
-
-* Added a hidden inline `#shirt-template` SVG (your original SVG, cleaned to use `fill="currentColor"` and `preserveAspectRatio="xMidYMid meet"`).
-* Replaced the `<img src="t-shirt.svg">` usage with a simple `<div class="shirt-icon"></div>` placeholder (in the same three row functions).
-* Added CSS so the inserted inline SVG scales and centers inside the circular `.player-icon` and isn't clipped.
-* Switched the random colour to produce an HSL value and set a `--team-colour` CSS variable on the `.team` element; the SVG uses `currentColor` so the team colour applies reliably.
-* Injected/cloned the inline SVG into every `.shirt-icon` after rendering each team.
-
-Here is the full updated file (copy & paste — it's your original file with only the necessary edits):
-
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -397,6 +384,3 @@ window.addEventListener("DOMContentLoaded",()=>{createPlayerChips();createGoalie
 </script>
 </body>
 </html>
-```
-
-If anything still looks off, tell me **which** team (left/right) or which row and I’ll make a tiny tweak (e.g. reduce svg scale from `100%` to `90%` for more padding inside the circle).
