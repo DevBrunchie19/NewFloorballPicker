@@ -101,25 +101,34 @@
 
     .player-block { display:flex; flex-direction:column; align-items:center; }
 
-    .player-icon {
-      width:80px;
-      height:80px;
-      border:3px solid #3a52a3;
-      border-radius:50%;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      background-color:white;
-      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="%233a52a3"><path d="M12 2a5 5 0 100 10 5 5 0 000-10zm0 12c-4.42 0-8 2.69-8 6v2h16v-2c0-3.31-3.58-6-8-6z"/></svg>');
-      background-repeat:no-repeat;
-      background-position:center;
-      background-size:80%;
-    }
+   .player-icon {
+  width: 80px;
+  height: 80px;
+  border: 3px solid #3a52a3;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: white;
 
-    .player-icon.goalie {
-      border-color:#f34974;
-      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="%23f34974"><path d="M12 2a5 5 0 100 10 5 5 0 000-10zm0 12c-4.42 0-8 2.69-8 6v2h16v-2c0-3.31-3.58-6-8-6z"/></svg>');
-    }
+  /* ➜ Use your real SVG file instead of embedded SVG */
+  background-image: url('t-shirt.svg');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 70%;
+}
+
+.player-icon.goalie {
+  border-color: #f34974;
+  background-image: url('t-shirt-goalie.svg');
+  background-size: 70%;
+}
+
+
+  /* Optional: use a different goalie shirt, or tint with CSS filter */
+  background-image: url('t-shirt.svg');
+  filter: hue-rotate(300deg) saturate(140%);
+}
 
     .row-center .goalie, .row-two .goalie, .row-three .goalie {
       align-self: center;
