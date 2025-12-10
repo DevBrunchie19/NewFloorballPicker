@@ -179,6 +179,13 @@
 </div>
 <div id="playerChips" class="chips-container"></div>
 
+<!-- NEW SECTION — minimal addition -->
+<div class="chips-header">
+  <label>The unusual suspects:</label>
+</div>
+<div id="unusualChips" class="chips-container"></div>
+<!-- END NEW SECTION -->
+
 <div class="chips-header"><label>Goalies:</label></div>
 <div id="goalieChips" class="chips-container"></div>
 
@@ -208,25 +215,162 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
 const commonPlayers=["Brunchie","Colin W-B","Nabber","Ben","Bill","Ron","Eugene"];
+const unusualPlayers=["Laserhawk","Two-Toes"];  // ★ NEW LIST
 const goalies=["Colin D","Sam","Cloth G"];
 
-function createPlayerChips(){createChips(commonPlayers,"playerChips",togglePlayer);}function createGoalieChips(){createChips(goalies,"goalieChips",toggleGoalie);}function createChips(list,containerId,handler){const c=document.getElementById(containerId);c.innerHTML="";list.forEach(n=>{const chip=document.createElement("div");chip.className="chip";chip.textContent=n;chip.onclick=()=>handler(n,chip);c.appendChild(chip);});}
-function togglePlayer(name,chip){const t=document.getElementById("names");let n=t.value.split(",").map(x=>x.trim()).filter(Boolean);if(n.includes(name)){n=n.filter(x=>x!==name);chip.classList.remove("selected");}else{n.push(name);chip.classList.add("selected");}t.value=n.join(", ");updateClearButtonVisibility();}
-function toggleGoalie(name,chip){chip.classList.toggle("selected");updateClearButtonVisibility();}
-function buildFinalPlayerPool(){return document.getElementById("names").value.split(",").map(n=>n.trim()).filter(Boolean);}function getSelectedGoalies(){return Array.from(document.querySelectorAll("#goalieChips .chip.selected")).map(c=>c.textContent.trim());}
-function selectTeamSize(size,chip){document.getElementById("teamSize").value=size;document.querySelectorAll(".team-size-container .chip").forEach(c=>c.classList.remove("selected"));chip.classList.add("selected");}
-function clearAllPlayers(){document.getElementById("names").value="";document.querySelectorAll("#playerChips .chip, #goalieChips .chip").forEach(c=>c.classList.remove("selected"));updateClearButtonVisibility();}
-function updateClearButtonVisibility(){const has=buildFinalPlayerPool().length>0||getSelectedGoalies().length>0;document.getElementById("clearChipsBtn").classList.toggle("visible",has);}function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}}
+function createPlayerChips(){createChips(commonPlayers,"playerChips",togglePlayer);}
+function createUnusualPlayerChips(){createChips(unusualPlayers,"unusualChips",togglePlayer);}  // ★ NEW FUNCTION
+function createGoalieChips(){createChips(goalies,"goalieChips",toggleGoalie);}
 
-function generateTeams(){let players=buildFinalPlayerPool();const selectedGoalies=getSelectedGoalies();const teamSize=parseInt(document.getElementById("teamSize").value,10);if(!teamSize||teamSize<1){alert("Enter valid team size.");return;}if(selectedGoalies.length){const gSet=new Set(selectedGoalies.map(g=>g.toLowerCase()));players=players.filter(p=>!gSet.has(p.toLowerCase()));}shuffle(players);const numTeams=2;const teams=Array.from({length:numTeams},()=>[]);const subsPerTeam=Array.from({length:numTeams},()=>[]);for(let i=0;i<numTeams;i++){if(selectedGoalies.length){teams[i].push(selectedGoalies[i%selectedGoalies.length]+" (G)");}}let currentTeam=0;for(const player of players){const skaters=teams[currentTeam].filter(p=>!p.includes("(G)")).length;if(skaters<teamSize){teams[currentTeam].push(player);}else{subsPerTeam[currentTeam].push(player);}currentTeam=(currentTeam+1)%numTeams;}renderTeams(teams,teamSize,subsPerTeam);toolbar.style.display=document.getElementById("output").innerText.trim()?"flex":"none";if(!navigator.share)document.getElementById("shareTeamsBtn").style.display="none";}
+function createChips(list,containerId,handler){
+  const c=document.getElementById(containerId);
+  c.innerHTML="";
+  list.forEach(n=>{
+    const chip=document.createElement("div");
+    chip.className="chip";
+    chip.textContent=n;
+    chip.onclick=()=>handler(n,chip);
+    c.appendChild(chip);
+  });
+}
 
-function randomTeamColour(){const h=Math.floor(Math.random()*360);return `hsl(${h} 65% 48%)`;}
+function togglePlayer(name,chip){
+  const t=document.getElementById("names");
+  let n=t.value.split(",").map(x=>x.trim()).filter(Boolean);
+  if(n.includes(name)){
+    n=n.filter(x=>x!==name);
+    chip.classList.remove("selected");
+  }else{
+    n.push(name);
+    chip.classList.add("selected");
+  }
+  t.value=n.join(", ");
+  updateClearButtonVisibility();
+}
 
-function injectShirtsIntoTeam(teamEl){const template=document.getElementById('shirt-template');if(!template)return;const wrappers=teamEl.querySelectorAll('.shirt-icon');wrappers.forEach(w=>{const clone=template.cloneNode(true);clone.removeAttribute('id');clone.style.display='block';clone.removeAttribute('width');clone.removeAttribute('height');clone.setAttribute('preserveAspectRatio','xMidYMid meet');w.innerHTML='';w.appendChild(clone);});}
+function toggleGoalie(name,chip){
+  chip.classList.toggle("selected");
+  updateClearButtonVisibility();
+}
 
-function injectSantaHats(teamEl){const hats=teamEl.querySelectorAll('.hat-icon');hats.forEach(h=>{h.innerHTML='<img src="santa_hat.png" alt="Santa Hat">';});}
+function buildFinalPlayerPool(){
+  return document.getElementById("names").value.split(",").map(n=>n.trim()).filter(Boolean);
+}
 
-function renderTeams(teams,teamSize,subsPerTeam){const teamNames=["The Five-Hole Fiddlers","Goal Diggers","Ball Blazers","Stick Flickers","The Mighty Dangles","Deez Sticks","Floor Fury","The Dirty Dekes","Stickflix and Chill","The Deflectors","Ballz Deep","Just the Tip-Ins","The Slap and Tickles"];shuffle(teamNames);const out=document.getElementById("output");out.innerHTML="";teams.forEach((team,i)=>{const displayName=teamNames[i%teamNames.length];let goalie=null;let playersOnly=team.slice();if(playersOnly[0]&&playersOnly[0].includes("(G)")){goalie=playersOnly[0];playersOnly=playersOnly.slice(1);}const subs=subsPerTeam[i]||[];const goalieTop=i%2===0;const subsVisible=subs.length>0?"visible":"";const colour=randomTeamColour();if(teamSize===3){let top,midL,midR,bottom;if(goalieTop){top=goalie;midL=playersOnly[0];midR=playersOnly[1];bottom=playersOnly[2];}else{top=playersOnly[0];midL=playersOnly[1];midR=playersOnly[2];bottom=goalie;}out.insertAdjacentHTML("beforeend",`
+function getSelectedGoalies(){
+  return Array.from(document.querySelectorAll("#goalieChips .chip.selected")).map(c=>c.textContent.trim());
+}
+
+function selectTeamSize(size,chip){
+  document.getElementById("teamSize").value=size;
+  document.querySelectorAll(".team-size-container .chip").forEach(c=>c.classList.remove("selected"));
+  chip.classList.add("selected");
+}
+
+function clearAllPlayers(){
+  document.getElementById("names").value="";
+  document.querySelectorAll("#playerChips .chip, #unusualChips .chip, #goalieChips .chip").forEach(c=>c.classList.remove("selected"));
+  updateClearButtonVisibility();
+}
+
+function updateClearButtonVisibility(){
+  const has=buildFinalPlayerPool().length>0||getSelectedGoalies().length>0;
+  document.getElementById("clearChipsBtn").classList.toggle("visible",has);
+}
+
+function shuffle(a){
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+}
+
+function generateTeams(){
+  let players=buildFinalPlayerPool();
+  const selectedGoalies=getSelectedGoalies();
+  const teamSize=parseInt(document.getElementById("teamSize").value,10);
+  if(!teamSize||teamSize<1){alert("Enter valid team size.");return;}
+  if(selectedGoalies.length){
+    const gSet=new Set(selectedGoalies.map(g=>g.toLowerCase()));
+    players=players.filter(p=>!gSet.has(p.toLowerCase()));
+  }
+  shuffle(players);
+  const numTeams=2;
+  const teams=Array.from({length:numTeams},()=>[]);
+  const subsPerTeam=Array.from({length:numTeams},()=>[]);
+  for(let i=0;i<numTeams;i++){
+    if(selectedGoalies.length){
+      teams[i].push(selectedGoalies[i%selectedGoalies.length]+" (G)");
+    }
+  }
+  let currentTeam=0;
+  for(const player of players){
+    const skaters=teams[currentTeam].filter(p=>!p.includes("(G)")).length;
+    if(skaters<teamSize){
+      teams[currentTeam].push(player);
+    }else{
+      subsPerTeam[currentTeam].push(player);
+    }
+    currentTeam=(currentTeam+1)%numTeams;
+  }
+  renderTeams(teams,teamSize,subsPerTeam);
+  toolbar.style.display=document.getElementById("output").innerText.trim()?"flex":"none";
+  if(!navigator.share)document.getElementById("shareTeamsBtn").style.display="none";
+}
+
+function randomTeamColour(){
+  const h=Math.floor(Math.random()*360);
+  return `hsl(${h} 65% 48%)`;
+}
+
+function injectShirtsIntoTeam(teamEl){
+  const template=document.getElementById('shirt-template');
+  if(!template)return;
+  const wrappers=teamEl.querySelectorAll('.shirt-icon');
+  wrappers.forEach(w=>{
+    const clone=template.cloneNode(true);
+    clone.removeAttribute('id');
+    clone.style.display='block';
+    clone.removeAttribute('width');
+    clone.removeAttribute('height');
+    clone.setAttribute('preserveAspectRatio','xMidYMid meet');
+    w.innerHTML='';
+    w.appendChild(clone);
+  });
+}
+
+function injectSantaHats(teamEl){
+  const hats=teamEl.querySelectorAll('.hat-icon');
+  hats.forEach(h=>{
+    h.innerHTML='<img src="santa_hat.png" alt="Santa Hat">';
+  });
+}
+
+function renderTeams(teams,teamSize,subsPerTeam){
+  const teamNames=["The Five-Hole Fiddlers","Goal Diggers","Ball Blazers","Stick Flickers","The Mighty Dangles","Deez Sticks","Floor Fury","The Dirty Dekes","Stickflix and Chill","The Deflectors","Ballz Deep","Just the Tip-Ins","The Slap and Tickles"];
+  shuffle(teamNames);
+  const out=document.getElementById("output");
+  out.innerHTML="";
+  teams.forEach((team,i)=>{
+    const displayName=teamNames[i%teamNames.length];
+    let goalie=null;
+    let playersOnly=team.slice();
+    if(playersOnly[0]&&playersOnly[0].includes("(G)")){
+      goalie=playersOnly[0];
+      playersOnly=playersOnly.slice(1);
+    }
+    const subs=subsPerTeam[i]||[];
+    const goalieTop=i%2===0;
+    const subsVisible=subs.length>0?"visible":"";
+    const colour=randomTeamColour();
+    if(teamSize===3){
+      let top,midL,midR,bottom;
+      if(goalieTop){
+        top=goalie;midL=playersOnly[0];midR=playersOnly[1];bottom=playersOnly[2];
+      }else{
+        top=playersOnly[0];midL=playersOnly[1];midR=playersOnly[2];bottom=goalie;
+      }
+      out.insertAdjacentHTML("beforeend",`
       <div class="team" style="--team-colour:${colour}">
         <div class="team-title">${displayName}</div>
         <div class="formation-container">
@@ -238,11 +382,18 @@ function renderTeams(teams,teamSize,subsPerTeam){const teamNames=["The Five-Hole
             ${subs.map(s=>`<div class="sub-card">${formatPlayer(s)}</div>`).join("")}
           </div>
         </div>
-      </div>`);return;}if(teamSize===5){const p=[...playersOnly];const g=goalie||"";let layoutHtml=goalieTop?`
+      </div>`);
+      return;
+    }
+    if(teamSize===5){
+      const p=[...playersOnly];
+      const g=goalie||"";
+      let layoutHtml=goalieTop?`
         ${centeredRow(g)}${twoAcrossRow(p[0],p[1])}${threeAcrossRow(p[2],p[3],p[4])}
       `:`
         ${threeAcrossRow(p[0],p[1],p[2])}${twoAcrossRow(p[3],p[4])}${centeredRow(g)}
-      `;out.insertAdjacentHTML("beforeend",`
+      `;
+      out.insertAdjacentHTML("beforeend",`
       <div class="team" style="--team-colour:${colour}">
         <div class="team-title">${displayName}</div>
         <div class="formation-container">
@@ -252,9 +403,19 @@ function renderTeams(teams,teamSize,subsPerTeam){const teamNames=["The Five-Hole
             ${subs.map(s=>`<div class="sub-card">${formatPlayer(s)}</div>`).join("")}
           </div>
         </div>
-      </div>`);}});document.querySelectorAll('.team').forEach(teamEl=>{const teamColour=teamEl.style.getPropertyValue('--team-colour')||'#3a52a3';teamEl.style.setProperty('--team-colour',teamColour.trim());injectShirtsIntoTeam(teamEl);injectSantaHats(teamEl);});}
+      </div>`);
+    }
+  });
+  document.querySelectorAll('.team').forEach(teamEl=>{
+    const teamColour=teamEl.style.getPropertyValue('--team-colour')||'#3a52a3';
+    teamEl.style.setProperty('--team-colour',teamColour.trim());
+    injectShirtsIntoTeam(teamEl);
+    injectSantaHats(teamEl);
+  });
+}
 
-function threeAcrossRow(l,m,r){return `
+function threeAcrossRow(l,m,r){
+  return `
 <div class="row-three">
 ${[l,m,r].map(x=>`
   <div class="player-block">
@@ -264,18 +425,22 @@ ${[l,m,r].map(x=>`
     </div>
     <div class="player-name">${formatPlayer(x)}</div>
   </div>`).join("")}
-</div>`;}
+</div>`;
+}
 
-function centeredRow(p){return p?`
+function centeredRow(p){
+  return p?`
 <div class="row-center">
   <div class="player-icon${p.includes('(G)')?' goalie':''}">
     <div class="hat-icon"></div>
     <div class="shirt-icon"></div>
   </div>
   <div class="player-name">${formatPlayer(p)}</div>
-</div>`:`<div class="row-center"><div style="height:46px"></div></div>`;}
+</div>`:`<div class="row-center"><div style="height:46px"></div></div>`;
+}
 
-function twoAcrossRow(l,r){return `
+function twoAcrossRow(l,r){
+  return `
 <div class="row-two">
   <div class="player-block">
     <div class="player-icon${l&&l.includes('(G)')?' goalie':''}">
@@ -291,13 +456,42 @@ function twoAcrossRow(l,r){return `
     </div>
     <div class="player-name">${formatPlayer(r)}</div>
   </div>
-</div>`;}
+</div>`;
+}
 
-function formatPlayer(p){if(!p)return"";return p.includes("(G)")?`🥅 ${p.replace("(G)","").trim()}`:p;}
+function formatPlayer(p){
+  if(!p)return"";
+  return p.includes("(G)")?`🥅 ${p.replace("(G)","").trim()}`:p;
+}
 
-const toolbar=document.getElementById("exportToolbar");function saveTeamsAsImage(){const o=document.getElementById("output");if(!o.innerText.trim()){alert("No teams to save yet!");return;}html2canvas(o,{backgroundColor:'#f9f9f9',scale:2}).then(c=>{const l=document.createElement("a");l.download="floorball_teams.png";l.href=c.toDataURL("image/png");l.click();});}
-function shareTeams(){const o=document.getElementById("output").innerText.trim();if(!o){alert("No teams to share yet!");return;}if(navigator.share){navigator.share({title:"Floorball Teams",text:o}).catch(e=>console.log("Share cancelled:",e));}else{alert("Sharing not supported on this device/browser. Try saving instead.");}}
-window.addEventListener("DOMContentLoaded",()=>{createPlayerChips();createGoalieChips();updateClearButtonVisibility();document.getElementById("names").addEventListener("input",updateClearButtonVisibility);});
+const toolbar=document.getElementById("exportToolbar");
+function saveTeamsAsImage(){
+  const o=document.getElementById("output");
+  if(!o.innerText.trim()){alert("No teams to save yet!");return;}
+  html2canvas(o,{backgroundColor:'#f9f9f9',scale:2}).then(c=>{
+    const l=document.createElement("a");
+    l.download="floorball_teams.png";
+    l.href=c.toDataURL("image/png");
+    l.click();
+  });
+}
+function shareTeams(){
+  const o=document.getElementById("output").innerText.trim();
+  if(!o){alert("No teams to share yet!");return;}
+  if(navigator.share){
+    navigator.share({title:"Floorball Teams",text:o}).catch(e=>console.log("Share cancelled:",e));
+  }else{
+    alert("Sharing not supported on this device/browser. Try saving instead.");
+  }
+}
+
+window.addEventListener("DOMContentLoaded",()=>{
+  createPlayerChips();
+  createUnusualPlayerChips();  // ★ ENSURES NEW SECTION LOADS
+  createGoalieChips();
+  updateClearButtonVisibility();
+  document.getElementById("names").addEventListener("input",updateClearButtonVisibility);
+});
 </script>
 </body>
 </html>
