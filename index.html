@@ -208,7 +208,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
 const commonPlayers=["Brunchie","Colin W-B","Nabber","Ben","Bill","Ron","Eugene"];
-const goalies=["Colin D","Sam","ClothGimp"];
+const goalies=["Colin D","Sam","Cloth G"];
 
 function createPlayerChips(){createChips(commonPlayers,"playerChips",togglePlayer);}function createGoalieChips(){createChips(goalies,"goalieChips",toggleGoalie);}function createChips(list,containerId,handler){const c=document.getElementById(containerId);c.innerHTML="";list.forEach(n=>{const chip=document.createElement("div");chip.className="chip";chip.textContent=n;chip.onclick=()=>handler(n,chip);c.appendChild(chip);});}
 function togglePlayer(name,chip){const t=document.getElementById("names");let n=t.value.split(",").map(x=>x.trim()).filter(Boolean);if(n.includes(name)){n=n.filter(x=>x!==name);chip.classList.remove("selected");}else{n.push(name);chip.classList.add("selected");}t.value=n.join(", ");updateClearButtonVisibility();}
