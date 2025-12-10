@@ -214,12 +214,12 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
-const commonPlayers=["Brunchie","Colin W-B","Nabber","Ben","Bill","Ron","Eugene"];
-const unusualPlayers=["Laserhawk","Two-Toes"];  // ★ NEW LIST
+const commonPlayers=["Brunchie","Colin W-B","Nabber","Ben","Bill","Ron"];
+const unusualPlayers=["Eugene","Dawn"];  
 const goalies=["Colin D","Sam","Cloth G"];
 
 function createPlayerChips(){createChips(commonPlayers,"playerChips",togglePlayer);}
-function createUnusualPlayerChips(){createChips(unusualPlayers,"unusualChips",togglePlayer);}  // ★ NEW FUNCTION
+function createUnusualPlayerChips(){createChips(unusualPlayers,"unusualChips",togglePlayer);}  
 function createGoalieChips(){createChips(goalies,"goalieChips",toggleGoalie);}
 
 function createChips(list,containerId,handler){
