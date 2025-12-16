@@ -196,7 +196,7 @@
 <p id="buttonText">Click the floorball to generate teams</p>
 
 <!-- MODAL WRAPPER FOR GENERATED TEAMS -->
-<div id="teamsModal" class="modal">
+<div id="teamsModal" class="modal" onclick="checkOutsideClick(event)">
   <div class="modal-content">
     <button class="modal-close" onclick="closeTeamsModal()">✕</button>
     <h2>Teams:</h2>
@@ -208,6 +208,7 @@
     </div>
   </div>
 </div>
+
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
@@ -497,6 +498,13 @@ window.addEventListener("DOMContentLoaded",()=>{
   updateClearButtonVisibility();
   document.getElementById("names").addEventListener("input",updateClearButtonVisibility);
 });
+
+  function checkOutsideClick(event){
+  if(event.target.id === "teamsModal"){
+    closeTeamsModal();
+  }
+}
+
 </script>
 </body>
 </html>
