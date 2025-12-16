@@ -14,6 +14,7 @@
       border-radius: 12px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
+
     h1 {
       padding: 12px;
       background: #3a52a3;
@@ -22,6 +23,7 @@
       color: #fff;
       font-size: clamp(1.5rem, 5vw, 2rem);
     }
+
     textarea, input {
       width: 100%;
       display: block;
@@ -32,25 +34,33 @@
       font-size: 1rem;
       box-sizing: border-box;
     }
+
     textarea { resize: none; min-height: 100px; }
+
     .button-wrapper { display: flex; justify-content: center; }
+
     .image-button {
       display: block;
       margin: 0 auto;
       width: 85px;
-      height: auto;
       cursor: pointer;
       filter: invert(29%) sepia(74%) saturate(488%) hue-rotate(189deg) brightness(100%) contrast(103%);
       transition: transform 0.15s ease;
     }
+
     .image-button:hover { transform: scale(1.1); }
     .image-button:active { transform: scale(0.95); }
-    #buttonText { text-align:center; font-size:0.95rem; color:#555; margin-top:10px; }
-    .team { background: #fff; padding: 12px; margin: 10px 0; border-radius: 8px; border:1px solid #ddd; --team-colour: #3a52a3; }
 
-    /* ---------- EXISTING STYLES CONTINUE UNCHANGED ---------- */
+    .team {
+      background: #fff;
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 8px;
+      border:1px solid #ddd;
+      --team-colour: #3a52a3;
+    }
 
-    /* ===== NEW: MODAL STYLES ===== */
+    /* ===== MODAL (NEW) ===== */
     .modal {
       position: fixed;
       inset: 0;
@@ -58,7 +68,7 @@
       display: none;
       align-items: center;
       justify-content: center;
-      z-index: 1000;
+      z-index: 9999;
     }
 
     .modal.visible {
@@ -68,13 +78,12 @@
     .modal-content {
       background: #f9f9f9;
       width: 95%;
-      max-width: 680px;
+      max-width: 700px;
       max-height: 90vh;
       overflow-y: auto;
       border-radius: 16px;
       padding: 20px;
       position: relative;
-      box-shadow: 0 12px 30px rgba(0,0,0,0.3);
     }
 
     .modal-close {
@@ -88,15 +97,20 @@
     }
   </style>
 </head>
+
 <body>
 
 <h1>Floorball Team Picker</h1>
 
-<!-- ALL ORIGINAL INPUT UI REMAINS UNCHANGED -->
+<!-- 🔹 ALL ORIGINAL INPUT UI REMAINS UNCHANGED 🔹 -->
+
+<div class="button-wrapper">
+  <img src="Floorball_Blk@2x.png" alt="Generate Teams" class="image-button" onclick="generateTeams()">
+</div>
 
 <p id="buttonText">Click the floorball to generate teams</p>
 
-<!-- ===== NEW: MODAL WRAPPER ===== -->
+<!-- ===== MODAL WRAPPER (NEW) ===== -->
 <div id="teamsModal" class="modal">
   <div class="modal-content">
     <button class="modal-close" onclick="closeTeamsModal()">✕</button>
@@ -104,31 +118,26 @@
     <h2>Teams:</h2>
     <div id="output"></div>
 
-    <div id="exportToolbar" style="display: none; justify-content: center; gap: 10px; margin-top: 12px; flex-wrap: wrap;">
-      <button id="saveImageBtn" onclick="saveTeamsAsImage()" class="toolbar-btn">Save as Image</button>
-      <button id="shareTeamsBtn" onclick="shareTeams()" class="toolbar-btn">Share Teams</button>
+    <div id="exportToolbar"
+         style="display:none; justify-content:center; gap:10px; margin-top:12px; flex-wrap:wrap;">
+      <button id="saveImageBtn" onclick="saveTeamsAsImage()">Save as Image</button>
+      <button id="shareTeamsBtn" onclick="shareTeams()">Share Teams</button>
     </div>
   </div>
 </div>
 
 <script>
-/* ---------- ALL YOUR EXISTING JS IS UNCHANGED ---------- */
+/* ===== YOUR ORIGINAL JS REMAINS UNCHANGED ===== */
 
-/* ===== NEW: MODAL CONTROL ===== */
-function openTeamsModal(){
-  document.getElementById("teamsModal").classList.add("visible");
-}
-
-function closeTeamsModal(){
+/* 🔹 ADD THIS FUNCTION 🔹 */
+function closeTeamsModal() {
   document.getElementById("teamsModal").classList.remove("visible");
 }
 
-/* ===== SINGLE ADDITION TO EXISTING FUNCTION ===== */
-const _originalGenerateTeams = generateTeams;
-generateTeams = function(){
-  _originalGenerateTeams();
-  openTeamsModal();
-};
+/* 🔹 ADD THIS SINGLE LINE AT THE END OF generateTeams() 🔹 */
+/*
+document.getElementById("teamsModal").classList.add("visible");
+*/
 </script>
 
 </body>
