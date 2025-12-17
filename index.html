@@ -76,58 +76,24 @@
       display:none;
     }
     .subs-section.visible { display:block; }
-    .sub-card {
-      padding:6px 10px;
-      border:1px solid #ccc;
-      border-radius:6px;
-      background:#fff;
-      margin:6px auto;
-      display:inline-block;
-    }
-    .row-center { display:flex; flex-direction:column; align-items:center; }
-    .row-two { width:80%; display:flex; justify-content:space-between; }
-    .row-three { width:100%; display:flex; justify-content:space-between; }
-    .player-block { display:flex; flex-direction:column; align-items:center; }
-    .player-icon {
-      width:80px;
-      height:80px;
-      border:2px dashed rgb(0 0 0 / 0%);
-      border-radius:50%;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      background-color:white;
-      overflow: visible;
-      position: relative;
-    }
-    .player-icon.goalie { border-color:#f34471; }
-    .shirt-icon { width:70%; height:70%; display:flex; align-items:center; justify-content:center; line-height:0; }
-    .shirt-icon svg { width: 100%; height: 100%; display:block; preserveAspectRatio: xMidYMid meet; color: var(--team-colour); }
-    .shirt-icon svg [fill] { fill: currentColor; }
-    .player-name { margin-top:6px; font-weight:600; text-align:center; }
-    .hat-icon {
-      position: absolute;
-      top: -15px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 40px;
-      height: auto;
-      pointer-events: none;
-    }
-    .hat-icon img { width: 100%; height: auto; display: block; }
-    @media (max-width:640px) { .formation-layout { gap:16px; } }
 
-    /* ===== MODAL ===== */
+    /* ===== MODAL WITH FADE + SCALE ===== */
     .modal {
       position: fixed;
       inset: 0;
       background: rgba(0,0,0,0.6);
-      display: none;
+      display: flex;
       align-items: center;
       justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
       z-index: 9999;
     }
-    .modal.visible { display: flex; }
+    .modal.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
     .modal-content {
       background: #f9f9f9;
       width: 95%;
@@ -137,6 +103,13 @@
       border-radius: 16px;
       padding: 20px;
       position: relative;
+      transform: scale(0.9);
+      opacity: 0;
+      transition: transform 0.25s ease, opacity 0.25s ease;
+    }
+    .modal.visible .modal-content {
+      transform: scale(1);
+      opacity: 1;
     }
     .modal-close {
       position: absolute;
@@ -147,9 +120,17 @@
       font-size: 1.5rem;
       cursor: pointer;
     }
+
+    #loadingMessage {
+      text-align: center;
+      font-size: 1.1rem;
+      padding: 30px 0;
+      color: #555;
+    }
   </style>
 </head>
 <body>
+
 <h1>Floorball Team Picker</h1>
 
 <svg id="shirt-template" style="display:none" viewBox="0 0 295.526 295.526" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
@@ -200,14 +181,18 @@
   <div class="modal-content">
     <button class="modal-close" onclick="closeTeamsModal()">✕</button>
     <h2>Teams:</h2>
+    <div id="loadingMessage" style="display:none;">Generating teams…</div>
     <div id="output"></div>
     <div id="exportToolbar"
          style="display:none; justify-content:center; gap:10px; margin-top:12px; flex-wrap:wrap;">
-      <button id="saveImageBtn" onclick="saveTeamsAsImage()">Save as Image</button>
-      <button id="shareTeamsBtn" onclick="shareTeams()">Share Teams</button>
+      <button onclick="saveTeamsAsImage()">Save as Image</button>
+      <button onclick="shareTeams()">Share Teams</button>
     </div>
   </div>
 </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
 
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -285,36 +270,47 @@ function shuffle(a){
 }
 
 function generateTeams(){
-  let players=buildFinalPlayerPool();
-  const selectedGoalies=getSelectedGoalies();
-  const teamSize=parseInt(document.getElementById("teamSize").value,10);
-  if(!teamSize||teamSize<1){alert("Enter valid team size.");return;}
-  if(selectedGoalies.length){
-    const gSet=new Set(selectedGoalies.map(g=>g.toLowerCase()));
-    players=players.filter(p=>!gSet.has(p.toLowerCase()));
-  }
-  shuffle(players);
-  const numTeams=2;
-  const teams=Array.from({length:numTeams},()=>[]);
-  const subsPerTeam=Array.from({length:numTeams},()=>[]);
-  for(let i=0;i<numTeams;i++){
+  const modal = document.getElementById("teamsModal");
+  const output = document.getElementById("output");
+  const loading = document.getElementById("loadingMessage");
+  const toolbar = document.getElementById("exportToolbar");
+
+  output.innerHTML = "";
+  toolbar.style.display = "none";
+  loading.style.display = "block";
+
+  modal.classList.add("visible");
+
+  setTimeout(() => {
+    loading.style.display = "none";
+
+    // ORIGINAL LOGIC CONTINUES
+    let players = buildFinalPlayerPool();
+    const selectedGoalies = getSelectedGoalies();
+    const teamSize = parseInt(document.getElementById("teamSize").value, 10);
+    if(!teamSize || teamSize < 1){ alert("Enter valid team size."); closeTeamsModal(); return; }
+
     if(selectedGoalies.length){
-      teams[i].push(selectedGoalies[i%selectedGoalies.length]+" (G)");
+      const gSet = new Set(selectedGoalies.map(g=>g.toLowerCase()));
+      players = players.filter(p=>!gSet.has(p.toLowerCase()));
     }
-  }
-  let currentTeam=0;
-  for(const player of players){
-    const skaters=teams[currentTeam].filter(p=>!p.includes("(G)")).length;
-    if(skaters<teamSize){
-      teams[currentTeam].push(player);
-    }else{
-      subsPerTeam[currentTeam].push(player);
-    }
-    currentTeam=(currentTeam+1)%numTeams;
-  }
-  renderTeams(teams,teamSize,subsPerTeam);
-  toolbar.style.display=document.getElementById("output").innerText.trim()?"flex":"none";
-  if(!navigator.share)document.getElementById("shareTeamsBtn").style.display="none";
+
+    shuffle(players);
+    const teams=[[],[]], subs=[[],[]];
+
+    selectedGoalies.forEach((g,i)=>teams[i%2].push(g+" (G)"));
+
+    let t=0;
+    players.forEach(p=>{
+      const skaters = teams[t].filter(x=>!x.includes("(G)")).length;
+      (skaters < teamSize ? teams[t] : subs[t]).push(p);
+      t=(t+1)%2;
+    });
+
+    renderTeams(teams, teamSize, subs);
+    toolbar.style.display = output.innerText.trim() ? "flex" : "none";
+  }, 700); // 👈 delay length (ms)
+}
 
   // SHOW MODAL
   document.getElementById("teamsModal").classList.add("visible");
