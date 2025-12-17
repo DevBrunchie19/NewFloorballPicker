@@ -393,15 +393,12 @@ function generateTeams(){
   const output = document.getElementById("output");
   const button = document.querySelector(".image-button");
 
-  // UI feedback
   button.classList.add("loading");
   modal.classList.add("visible");
   output.innerHTML = `<p style="text-align:center;font-weight:600;">🏑 Generating teams…</p>`;
 
   setTimeout(() => {
     button.classList.remove("loading");
-
-    /* ===== ORIGINAL LOGIC (UNCHANGED) ===== */
 
     let players = buildFinalPlayerPool();
     const selectedGoalies = getSelectedGoalies();
@@ -443,11 +440,16 @@ function generateTeams(){
 
     renderTeams(teams, teamSize, subsPerTeam);
 
-    toolbar.style.display =
-      document.getElementById("output").innerText.trim() ? "flex" : "none";
+    const toolbarEl = document.getElementById("exportToolbar");
+    if (toolbarEl) {
+      toolbarEl.style.display =
+        document.getElementById("output").innerText.trim() ? "flex" : "none";
+    }
 
-    if (!navigator.share)
-      document.getElementById("shareTeamsBtn").style.display = "none";
+    if (!navigator.share) {
+      const shareBtn = document.getElementById("shareTeamsBtn");
+      if (shareBtn) shareBtn.style.display = "none";
+    }
 
   }, 400);
 }
