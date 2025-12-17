@@ -389,36 +389,67 @@ function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random
 
 /* 🔥 ENHANCED generateTeams */
 function generateTeams(){
-  const modal=document.getElementById("teamsModal");
-  const output=document.getElementById("output");
-  const button=document.querySelector(".image-button");
+  const modal = document.getElementById("teamsModal");
+  const output = document.getElementById("output");
+  const button = document.querySelector(".image-button");
 
+  // UI feedback
   button.classList.add("loading");
   modal.classList.add("visible");
-  output.innerHTML="<p style='text-align:center;font-weight:600;'>🏑 Generating teams…</p>";
+  output.innerHTML = `<p style="text-align:center;font-weight:600;">🏑 Generating teams…</p>`;
 
-  setTimeout(()=>{
+  setTimeout(() => {
     button.classList.remove("loading");
 
-    let players=buildFinalPlayerPool();
-    const goalies=getSelectedGoalies();
-    const size=parseInt(document.getElementById("teamSize").value);
-    if(!size){alert("Enter team size");closeTeamsModal();return;}
+    /* ===== ORIGINAL LOGIC (UNCHANGED) ===== */
+
+    let players = buildFinalPlayerPool();
+    const selectedGoalies = getSelectedGoalies();
+    const teamSize = parseInt(document.getElementById("teamSize").value, 10);
+
+    if (!teamSize || teamSize < 1) {
+      alert("Enter valid team size.");
+      closeTeamsModal();
+      return;
+    }
+
+    if (selectedGoalies.length) {
+      const gSet = new Set(selectedGoalies.map(g => g.toLowerCase()));
+      players = players.filter(p => !gSet.has(p.toLowerCase()));
+    }
 
     shuffle(players);
-    const teams=[[],[]],subs=[[],[]];
-    goalies.forEach((g,i)=>teams[i%2].push(g+" (G)"));
 
-    let t=0;
-    players.forEach(p=>{
-      if(teams[t].filter(x=>!x.includes("(G)")).length<size)teams[t].push(p);
-      else subs[t].push(p);
-      t=(t+1)%2;
-    });
+    const numTeams = 2;
+    const teams = Array.from({ length: numTeams }, () => []);
+    const subsPerTeam = Array.from({ length: numTeams }, () => []);
 
-    renderTeams(teams,size,subs);
-    document.getElementById("exportToolbar").style.display="flex";
-  },400);
+    for (let i = 0; i < numTeams; i++) {
+      if (selectedGoalies.length) {
+        teams[i].push(selectedGoalies[i % selectedGoalies.length] + " (G)");
+      }
+    }
+
+    let currentTeam = 0;
+    for (const player of players) {
+      const skaters = teams[currentTeam].filter(p => !p.includes("(G)")).length;
+      if (skaters < teamSize) {
+        teams[currentTeam].push(player);
+      } else {
+        subsPerTeam[currentTeam].push(player);
+      }
+      currentTeam = (currentTeam + 1) % numTeams;
+    }
+
+    renderTeams(teams, teamSize, subsPerTeam);
+
+    toolbar.style.display =
+      document.getElementById("output").innerText.trim() ? "flex" : "none";
+
+    if (!navigator.share)
+      document.getElementById("shareTeamsBtn").style.display = "none";
+
+  }, 400);
 }
 
 function closeTeamsModal(){document.getElementById("teamsModal").classList.remove("visible");}
