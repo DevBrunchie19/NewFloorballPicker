@@ -1,169 +1,510 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Floorball Team Picker</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<style>
-/* ===== ORIGINAL CSS (UNCHANGED) ===== */
-body {
-  font-family: Arial, sans-serif;
-  max-width: 600px;
-  margin: 40px auto;
-  padding: 20px;
-  background: #f9f9f9;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-h1 {
-  padding: 12px;
-  background: #3a52a3;
-  text-align: center;
-  border-radius: 8px;
-  color: #fff;
-  font-size: clamp(1.5rem, 5vw, 2rem);
-}
-textarea, input {
-  width: 100%;
-  display: block;
-  margin: 6px auto 12px auto;
-  padding: 12px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 1rem;
-  box-sizing: border-box;
-}
-textarea { resize: none; min-height: 100px; }
-.button-wrapper { display: flex; justify-content: center; }
+  <meta charset="UTF-8">
+  <title>Floorball Team Picker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #f9f9f9;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    h1 {
+      padding: 12px;
+      background: #3a52a3;
+      text-align: center;
+      border-radius: 8px;
+      color: #fff;
+      font-size: clamp(1.5rem, 5vw, 2rem);
+    }
+    textarea, input {
+      width: 100%;
+      display: block;
+      margin: 6px auto 12px auto;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 1rem;
+      box-sizing: border-box;
+    }
+    textarea { resize: none; min-height: 100px; }
+    .button-wrapper { display: flex; justify-content: center; }
+    .image-button {
+      display: block;
+      margin: 0 auto;
+      width: 85px;
+      height: auto;
+      cursor: pointer;
+      filter: invert(29%) sepia(74%) saturate(488%) hue-rotate(189deg) brightness(100%) contrast(103%);
+      transition: transform 0.15s ease;
+    }
+    .image-button:hover { transform: scale(1.1); }
+    .image-button:active { transform: scale(0.95); }
+    #buttonText { text-align:center; font-size:0.95rem; color:#555; margin-top:10px; }
+    .team { background: #fff; padding: 12px; margin: 10px 0; border-radius: 8px; border:1px solid #ddd; --team-colour: #3a52a3; }
+    .chips-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
+    #clearChipsBtn {
+      background: #3a52a3; color:white; border:none; border-radius:16px;
+      padding:6px 12px; cursor:pointer; font-size:0.9rem;
+      transition: background 0.2s ease, transform 0.1s ease, opacity 0.3s ease;
+      opacity:0; pointer-events:none;
+    }
+    #clearChipsBtn.visible { opacity:1; pointer-events:auto; }
+    #clearChipsBtn:hover { background:#516fd3; }
+    #clearChipsBtn:active { transform:scale(0.95); }
+    .chips-container { display:flex; flex-wrap:wrap; gap:8px; margin:8px 0 12px 0; }
+    .chip { padding:8px 14px; background:#e0e0e0; border-radius:20px; cursor:pointer; font-size:0.95rem; transition:all 0.2s ease; user-select:none; }
+    .chip:hover { background:#d0d0d0; }
+    .chip.selected { background:#3a52a3; color:white; box-shadow:0 2px 6px rgba(0,0,0,0.15); }
+    .team-size-container { display:flex; gap:8px; margin:6px 0 12px 0; }
+    .team-title { font-size:1.2rem; font-weight:bold; text-align:center; margin-bottom:10px; }
+    .formation-container { display:flex; flex-direction:column; align-items:center; width:100%; }
+    .formation-layout { width:100%; display:flex; flex-direction:column; align-items:center; gap:20px; }
+    .subs-section {
+      width:75%;
+      background:#fafafa;
+      border-radius:10px;
+      padding:10px;
+      border:1px solid #ddd;
+      margin-top:16px;
+      text-align:center;
+      display:none;
+    }
+    .subs-section.visible { display:block; }
+    .sub-card {
+      padding:6px 10px;
+      border:1px solid #ccc;
+      border-radius:6px;
+      background:#fff;
+      margin:6px auto;
+      display:inline-block;
+    }
+    .row-center { display:flex; flex-direction:column; align-items:center; }
+    .row-two { width:80%; display:flex; justify-content:space-between; }
+    .row-three { width:100%; display:flex; justify-content:space-between; }
+    .player-block { display:flex; flex-direction:column; align-items:center; }
+    .player-icon {
+      width:80px;
+      height:80px;
+      border:2px dashed rgb(0 0 0 / 0%);
+      border-radius:50%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background-color:white;
+      overflow: visible;
+      position: relative;
+    }
+    .player-icon.goalie { border-color:#f34471; }
+    .shirt-icon { width:70%; height:70%; display:flex; align-items:center; justify-content:center; line-height:0; }
+    .shirt-icon svg { width: 100%; height: 100%; display:block; preserveAspectRatio: xMidYMid meet; color: var(--team-colour); }
+    .shirt-icon svg [fill] { fill: currentColor; }
+    .player-name { margin-top:6px; font-weight:600; text-align:center; }
+    .hat-icon {
+      position: absolute;
+      top: -15px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 40px;
+      height: auto;
+      pointer-events: none;
+    }
+    .hat-icon img { width: 100%; height: auto; display: block; }
+    @media (max-width:640px) { .formation-layout { gap:16px; } }
 
-.image-button {
-  display: block;
-  margin: 0 auto;
-  width: 85px;
-  cursor: pointer;
-  filter: invert(29%) sepia(74%) saturate(488%) hue-rotate(189deg);
-  transition: transform 0.15s ease, opacity 0.2s ease;
-}
-.image-button:hover { transform: scale(1.1); }
-.image-button:active { transform: scale(0.95); }
-
-/* ✅ BUTTON LOADING ANIMATION (NEW) */
-.image-button.loading {
-  animation: spin 0.6s linear infinite;
-  opacity: 0.7;
-}
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-/* ===== MODAL (UPDATED, SAFE) ===== */
-.modal {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.25s ease;
-}
-.modal.visible {
-  opacity: 1;
-  pointer-events: auto;
-}
-.modal-content {
-  background: #f9f9f9;
-  width: 95%;
-  max-width: 700px;
-  max-height: 90vh;
-  overflow-y: auto;
-  border-radius: 16px;
-  padding: 20px;
-  position: relative;
-
-  transform: scale(0.95) translateY(12px);
-  transition: transform 0.25s ease;
-}
-.modal.visible .modal-content {
-  transform: scale(1) translateY(0);
-}
-.modal-close {
-  position: absolute;
-  top: 10px;
-  right: 14px;
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-}
-
-/* ===== REST OF YOUR CSS CONTINUES UNCHANGED ===== */
-/* (chips, formations, players, etc — untouched) */
-</style>
+    /* ===== MODAL ===== */
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+    .modal.visible { display: flex; }
+    .modal-content {
+      background: #f9f9f9;
+      width: 95%;
+      max-width: 700px;
+      max-height: 90vh;
+      overflow-y: auto;
+      border-radius: 16px;
+      padding: 20px;
+      position: relative;
+    }
+    .modal-close {
+      position: absolute;
+      top: 10px;
+      right: 14px;
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+  </style>
 </head>
-
 <body>
 <h1>Floorball Team Picker</h1>
 
-<!-- (HTML UNCHANGED — omitted here for brevity, but KEEP YOUR FULL HTML EXACTLY AS POSTED) -->
+<svg id="shirt-template" style="display:none" viewBox="0 0 295.526 295.526" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+  <g fill="currentColor">
+    <path d="M147.763,44.074c12.801,0,23.858-8.162,27.83-20.169c-7.578,2.086-17.237,3.345-27.83,3.345
+      c-10.592,0-20.251-1.259-27.828-3.345C123.905,35.911,134.961,44.074,147.763,44.074z"/>
+    <path d="M295.158,58.839c-0.608-1.706-1.873-3.109-3.521-3.873l-56.343-26.01c-11.985-4.06-24.195-7.267-36.524-9.611
+      c-0.434-0.085-0.866-0.126-1.292-0.126c-3.052,0-5.785,2.107-6.465,5.197c-4.502,19.82-22.047,34.659-43.251,34.659
+      c-21.203,0-38.749-14.838-43.25-34.659c-0.688-3.09-3.416-5.197-6.466-5.197c-0.426,0-0.858,0.041-1.292,0.126
+      c-12.328,2.344-24.538,5.551-36.542,9.611L3.889,54.965c-1.658,0.764-2.932,2.167-3.511,3.873
+      c-0.599,1.726-0.491,3.589,0.353,5.217l24.46,48.272c1.145,2.291,3.474,3.666,5.938,3.666c0.636,0,1.281-0.092,1.917-0.283
+      l27.167-8.052v161.97c0,3.678,3.001,6.678,6.689,6.678h161.723c3.678,0,6.67-3.001,6.67-6.678V107.66l27.186,8.052
+      c0.636,0.191,1.28,0.283,1.915,0.283c2.459,0,4.779-1.375,5.94-3.666l24.469-48.272C295.629,62.428,295.747,60.565,295.158,58.839z"/>
+  </g>
+</svg>
 
+<div class="chips-header">
+  <label>The usual suspects:</label>
+  <button id="clearChipsBtn" type="button" onclick="clearAllPlayers()">Clear All</button>
+</div>
+<div id="playerChips" class="chips-container"></div>
+
+<div class="chips-header">
+  <label>The unusual suspects:</label>
+</div>
+<div id="unusualChips" class="chips-container"></div>
+
+<div class="chips-header"><label>Goalies:</label></div>
+<div id="goalieChips" class="chips-container"></div>
+
+<label for="names">Enter additional players (comma separated):</label>
+<textarea id="names" rows="5" placeholder="Gretzky, McLovin, ..."></textarea>
+
+<label for="teamSize">Team size:</label>
+<div class="team-size-container">
+  <div class="chip" onclick="selectTeamSize(3,this)">3</div>
+  <div class="chip" onclick="selectTeamSize(5,this)">5</div>
+</div>
+<input type="number" id="teamSize" min="1" placeholder="e.g. 3">
+
+<div class="button-wrapper">
+  <img src="Floorball_Blk@2x.png" alt="Generate Teams" class="image-button" onclick="generateTeams()">
+</div>
+<p id="buttonText">Click the floorball to generate teams</p>
+
+<!-- MODAL WRAPPER FOR GENERATED TEAMS -->
+<div id="teamsModal" class="modal" onclick="checkOutsideClick(event)">
+  <div class="modal-content">
+    <button class="modal-close" onclick="closeTeamsModal()">✕</button>
+    <h2>Teams:</h2>
+    <div id="output"></div>
+    <div id="exportToolbar"
+         style="display:none; justify-content:center; gap:10px; margin-top:12px; flex-wrap:wrap;">
+      <button id="saveImageBtn" onclick="saveTeamsAsImage()">Save as Image</button>
+      <button id="shareTeamsBtn" onclick="shareTeams()">Share Teams</button>
+    </div>
+  </div>
+</div>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
-/* ===== ONLY generateTeams() IS TOUCHED ===== */
+/* ===== FULL ORIGINAL JS START ===== */
+const commonPlayers=["Brunchie","Colin W-B","Nabber","Ben","Bill","Ron"];
+const unusualPlayers=["Eugene","Dawn"];  
+const goalies=["Colin D","Sam","Cloth G"];
+
+function createPlayerChips(){createChips(commonPlayers,"playerChips",togglePlayer);}
+function createUnusualPlayerChips(){createChips(unusualPlayers,"unusualChips",togglePlayer);}  
+function createGoalieChips(){createChips(goalies,"goalieChips",toggleGoalie);}
+
+function createChips(list,containerId,handler){
+  const c=document.getElementById(containerId);
+  c.innerHTML="";
+  list.forEach(n=>{
+    const chip=document.createElement("div");
+    chip.className="chip";
+    chip.textContent=n;
+    chip.onclick=()=>handler(n,chip);
+    c.appendChild(chip);
+  });
+}
+
+function togglePlayer(name,chip){
+  const t=document.getElementById("names");
+  let n=t.value.split(",").map(x=>x.trim()).filter(Boolean);
+  if(n.includes(name)){
+    n=n.filter(x=>x!==name);
+    chip.classList.remove("selected");
+  }else{
+    n.push(name);
+    chip.classList.add("selected");
+  }
+  t.value=n.join(", ");
+  updateClearButtonVisibility();
+}
+
+function toggleGoalie(name,chip){
+  chip.classList.toggle("selected");
+  updateClearButtonVisibility();
+}
+
+function buildFinalPlayerPool(){
+  return document.getElementById("names").value.split(",").map(n=>n.trim()).filter(Boolean);
+}
+
+function getSelectedGoalies(){
+  return Array.from(document.querySelectorAll("#goalieChips .chip.selected")).map(c=>c.textContent.trim());
+}
+
+function selectTeamSize(size,chip){
+  document.getElementById("teamSize").value=size;
+  document.querySelectorAll(".team-size-container .chip").forEach(c=>c.classList.remove("selected"));
+  chip.classList.add("selected");
+}
+
+function clearAllPlayers(){
+  document.getElementById("names").value="";
+  document.querySelectorAll("#playerChips .chip, #unusualChips .chip, #goalieChips .chip").forEach(c=>c.classList.remove("selected"));
+  updateClearButtonVisibility();
+}
+
+function updateClearButtonVisibility(){
+  const has=buildFinalPlayerPool().length>0||getSelectedGoalies().length>0;
+  document.getElementById("clearChipsBtn").classList.toggle("visible",has);
+}
+
+function shuffle(a){
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+}
 
 function generateTeams(){
-  const button = document.querySelector(".image-button");
-  button.classList.add("loading");
+  let players=buildFinalPlayerPool();
+  const selectedGoalies=getSelectedGoalies();
+  const teamSize=parseInt(document.getElementById("teamSize").value,10);
+  if(!teamSize||teamSize<1){alert("Enter valid team size.");return;}
+  if(selectedGoalies.length){
+    const gSet=new Set(selectedGoalies.map(g=>g.toLowerCase()));
+    players=players.filter(p=>!gSet.has(p.toLowerCase()));
+  }
+  shuffle(players);
+  const numTeams=2;
+  const teams=Array.from({length:numTeams},()=>[]);
+  const subsPerTeam=Array.from({length:numTeams},()=>[]);
+  for(let i=0;i<numTeams;i++){
+    if(selectedGoalies.length){
+      teams[i].push(selectedGoalies[i%selectedGoalies.length]+" (G)");
+    }
+  }
+  let currentTeam=0;
+  for(const player of players){
+    const skaters=teams[currentTeam].filter(p=>!p.includes("(G)")).length;
+    if(skaters<teamSize){
+      teams[currentTeam].push(player);
+    }else{
+      subsPerTeam[currentTeam].push(player);
+    }
+    currentTeam=(currentTeam+1)%numTeams;
+  }
+  renderTeams(teams,teamSize,subsPerTeam);
+  toolbar.style.display=document.getElementById("output").innerText.trim()?"flex":"none";
+  if(!navigator.share)document.getElementById("shareTeamsBtn").style.display="none";
 
-  // ⏳ SHORT DELAY FOR "GENERATING" FEEL
-  setTimeout(() => {
+  // SHOW MODAL
+  document.getElementById("teamsModal").classList.add("visible");
+}
 
-    let players = buildFinalPlayerPool();
-    const selectedGoalies = getSelectedGoalies();
-    const teamSize = parseInt(document.getElementById("teamSize").value,10);
+function randomTeamColour(){
+  const h=Math.floor(Math.random()*360);
+  return `hsl(${h} 65% 48%)`;
+}
 
-    if(!teamSize || teamSize < 1){
-      alert("Enter valid team size.");
-      button.classList.remove("loading");
+function injectShirtsIntoTeam(teamEl){
+  const template=document.getElementById('shirt-template');
+  if(!template)return;
+  const wrappers=teamEl.querySelectorAll('.shirt-icon');
+  wrappers.forEach(w=>{
+    const clone=template.cloneNode(true);
+    clone.removeAttribute('id');
+    clone.style.display='block';
+    clone.removeAttribute('width');
+    clone.removeAttribute('height');
+    clone.setAttribute('preserveAspectRatio','xMidYMid meet');
+    w.innerHTML='';
+    w.appendChild(clone);
+  });
+}
+
+function injectSantaHats(teamEl){
+  const hats=teamEl.querySelectorAll('.hat-icon');
+  hats.forEach(h=>{
+    h.innerHTML='<img src="santa_hat.png" alt="Santa Hat">';
+  });
+}
+
+function renderTeams(teams,teamSize,subsPerTeam){
+  const teamNames=["The Five-Hole Fiddlers","Goal Diggers","Ball Blazers","Stick Flickers","The Mighty Dangles","Deez Sticks","Floor Fury","The Dirty Dekes","Stickflix and Chill","The Deflectors","Ballz Deep","Just the Tip-Ins","The Slap and Tickles"];
+  shuffle(teamNames);
+  const out=document.getElementById("output");
+  out.innerHTML="";
+  teams.forEach((team,i)=>{
+    const displayName=teamNames[i%teamNames.length];
+    let goalie=null;
+    let playersOnly=team.slice();
+    if(playersOnly[0]&&playersOnly[0].includes("(G)")){
+      goalie=playersOnly[0];
+      playersOnly=playersOnly.slice(1);
+    }
+    const subs=subsPerTeam[i]||[];
+    const goalieTop=i%2===0;
+    const subsVisible=subs.length>0?"visible":"";
+    const colour=randomTeamColour();
+    if(teamSize===3){
+      let top,midL,midR,bottom;
+      if(goalieTop){
+        top=goalie;midL=playersOnly[0];midR=playersOnly[1];bottom=playersOnly[2];
+      }else{
+        top=playersOnly[0];midL=playersOnly[1];midR=playersOnly[2];bottom=goalie;
+      }
+      out.insertAdjacentHTML("beforeend",`
+      <div class="team" style="--team-colour:${colour}">
+        <div class="team-title">${displayName}</div>
+        <div class="formation-container">
+          <div class="formation-layout">
+            ${centeredRow(top)}${twoAcrossRow(midL,midR)}${centeredRow(bottom)}
+          </div>
+          <div class="subs-section ${subsVisible}">
+            <div style="font-weight:bold;">Subs</div>
+            ${subs.map(s=>`<div class="sub-card">${formatPlayer(s)}</div>`).join("")}
+          </div>
+        </div>
+      </div>`);
       return;
     }
-
-    if(selectedGoalies.length){
-      const gSet=new Set(selectedGoalies.map(g=>g.toLowerCase()));
-      players=players.filter(p=>!gSet.has(p.toLowerCase()));
+    if(teamSize===5){
+      const p=[...playersOnly];
+      const g=goalie||"";
+      let layoutHtml=goalieTop?`
+        ${centeredRow(g)}${twoAcrossRow(p[0],p[1])}${threeAcrossRow(p[2],p[3],p[4])}
+      `:`
+        ${threeAcrossRow(p[0],p[1],p[2])}${twoAcrossRow(p[3],p[4])}${centeredRow(g)}
+      `;
+      out.insertAdjacentHTML("beforeend",`
+      <div class="team" style="--team-colour:${colour}">
+        <div class="team-title">${displayName}</div>
+        <div class="formation-container">
+          <div class="formation-layout">${layoutHtml}</div>
+          <div class="subs-section ${subsVisible}">
+            <div style="font-weight:bold;">Subs</div>
+            ${subs.map(s=>`<div class="sub-card">${formatPlayer(s)}</div>`).join("")}
+          </div>
+        </div>
+      </div>`);
     }
-
-    shuffle(players);
-
-    const teams=[[],[]];
-    const subsPerTeam=[[],[]];
-
-    selectedGoalies.forEach((g,i)=>{
-      teams[i%2].push(g+" (G)");
-    });
-
-    let currentTeam=0;
-    for(const p of players){
-      const skaters=teams[currentTeam].filter(x=>!x.includes("(G)")).length;
-      if(skaters<teamSize){
-        teams[currentTeam].push(p);
-      }else{
-        subsPerTeam[currentTeam].push(p);
-      }
-      currentTeam=(currentTeam+1)%2;
-    }
-
-    renderTeams(teams,teamSize,subsPerTeam);
-
-    document.getElementById("teamsModal").classList.add("visible");
-    button.classList.remove("loading");
-
-  }, 300);
+  });
+  document.querySelectorAll('.team').forEach(teamEl=>{
+    const teamColour=teamEl.style.getPropertyValue('--team-colour')||'#3a52a3';
+    teamEl.style.setProperty('--team-colour',teamColour.trim());
+    injectShirtsIntoTeam(teamEl);
+    injectSantaHats(teamEl);
+  });
 }
-</script>
 
+function threeAcrossRow(l,m,r){
+  return `
+<div class="row-three">
+${[l,m,r].map(x=>`
+  <div class="player-block">
+    <div class="player-icon${x&&x.includes('(G)')?' goalie':''}">
+      <div class="hat-icon"></div>
+      <div class="shirt-icon"></div>
+    </div>
+    <div class="player-name">${formatPlayer(x)}</div>
+  </div>`).join("")}
+</div>`;
+}
+
+function centeredRow(p){
+  return p?`
+<div class="row-center">
+  <div class="player-icon${p.includes('(G)')?' goalie':''}">
+    <div class="hat-icon"></div>
+    <div class="shirt-icon"></div>
+  </div>
+  <div class="player-name">${formatPlayer(p)}</div>
+</div>`:`<div class="row-center"><div style="height:46px"></div></div>`;
+}
+
+function twoAcrossRow(l,r){
+  return `
+<div class="row-two">
+  <div class="player-block">
+    <div class="player-icon${l&&l.includes('(G)')?' goalie':''}">
+      <div class="hat-icon"></div>
+      <div class="shirt-icon"></div>
+    </div>
+    <div class="player-name">${formatPlayer(l)}</div>
+  </div>
+  <div class="player-block">
+    <div class="player-icon${r&&r.includes('(G)')?' goalie':''}">
+      <div class="hat-icon"></div>
+      <div class="shirt-icon"></div>
+    </div>
+    <div class="player-name">${formatPlayer(r)}</div>
+  </div>
+</div>`;
+}
+
+function formatPlayer(p){
+  if(!p)return"";
+  return p.includes("(G)")?`🥅 ${p.replace("(G)","").trim()}`:p;
+}
+
+const toolbar=document.getElementById("exportToolbar");
+function saveTeamsAsImage(){
+  const o=document.getElementById("output");
+  if(!o.innerText.trim()){alert("No teams to save yet!");return;}
+  html2canvas(o,{backgroundColor:'#f9f9f9',scale:2}).then(c=>{
+    const l=document.createElement("a");
+    l.download="floorball_teams.png";
+    l.href=c.toDataURL("image/png");
+    l.click();
+  });
+}
+function shareTeams(){
+  const o=document.getElementById("output").innerText.trim();
+  if(!o){alert("No teams to share yet!");return;}
+  if(navigator.share){
+    navigator.share({title:"Floorball Teams",text:o}).catch(e=>console.log("Share cancelled:",e));
+  }else{
+    alert("Sharing not supported on this device/browser. Try saving instead.");
+  }
+}
+
+function closeTeamsModal(){
+  document.getElementById("teamsModal").classList.remove("visible");
+}
+
+window.addEventListener("DOMContentLoaded",()=>{
+  createPlayerChips();
+  createUnusualPlayerChips();
+  createGoalieChips();
+  updateClearButtonVisibility();
+  document.getElementById("names").addEventListener("input",updateClearButtonVisibility);
+});
+
+  function checkOutsideClick(event){
+  if(event.target.id === "teamsModal"){
+    closeTeamsModal();
+  }
+}
+
+</script>
 </body>
 </html>
