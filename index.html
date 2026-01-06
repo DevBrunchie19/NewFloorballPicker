@@ -370,11 +370,20 @@ function checkOutsideClick(e){
 }
 
 
-function randomTeamColour(){
+/*function randomTeamColour(){
   const h=Math.floor(Math.random()*360);
   return `hsl(${h} 65% 48%)`;
 }
+*/
 
+ function teamColourByIndex(index, totalTeams) {
+  const offset = Math.floor(Math.random() * 360);
+  const hue = (offset + (360 / totalTeams) * index) % 360;
+  return `hsl(${hue} 65% 48%)`;
+}
+
+
+  
 function injectShirtsIntoTeam(teamEl){
   const template=document.getElementById('shirt-template');
   if(!template)return;
@@ -414,7 +423,8 @@ function renderTeams(teams,teamSize,subsPerTeam){
     const subs=subsPerTeam[i]||[];
     const goalieTop=i%2===0;
     const subsVisible=subs.length>0?"visible":"";
-    const colour=randomTeamColour();
+    /*const colour=randomTeamColour();*/
+    const colour = teamColourByIndex(i, teams.length);
     if(teamSize===3){
       let top,midL,midR,bottom;
       if(goalieTop){
