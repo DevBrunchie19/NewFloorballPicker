@@ -107,14 +107,14 @@ h1 {
     .shirt-icon svg { width: 100%; height: 100%; display:block; preserveAspectRatio: xMidYMid meet; color: var(--team-colour); }
     .shirt-icon svg [fill] { fill: currentColor; }
     .player-name { margin-top:6px; font-weight:600; text-align:center; }
-    .hat-icon {
+   /* .hat-icon {
       position: absolute;
       top: -15px;
       left: 50%;
       transform: translateX(-50%);
       width: 40px;
       height: auto;
-      pointer-events: none;
+      pointer-events: none; */
     }
   /*  .hat-icon img { width: 100%; height: auto; display: block; }
     @media (max-width:640px) { .formation-layout { gap:16px; } } */
@@ -391,12 +391,12 @@ function injectShirtsIntoTeam(teamEl){
   });
 }
 
-function injectSantaHats(teamEl){
+/*function injectSantaHats(teamEl){
   const hats=teamEl.querySelectorAll('.hat-icon');
   hats.forEach(h=>{
     h.innerHTML='<img src="santa_hat.png" alt="Santa Hat">';
   });
-} 
+} */
 
 function renderTeams(teams,teamSize,subsPerTeam){
   const teamNames=["The Five-Hole Fiddlers","Goal Diggers","Ball Blazers","Stick Flickers","The Mighty Dangles","Deez Sticks","Floor Fury","The Dirty Dekes","Stickflix and Chill","The Deflectors","Ballz Deep","Just the Tip-Ins","The Slap and Tickles"];
