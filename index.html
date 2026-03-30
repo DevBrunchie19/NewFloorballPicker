@@ -163,18 +163,33 @@ textarea { resize: none; min-height: 100px; }
     /* center line */
     linear-gradient(
       to bottom,
-      transparent 49.8%, 
-      #555 50%, 
+      transparent 49.8%,
+      #555 50%,
       transparent 50.2%
     ),
 
-    /* center faceoff circle (ring) */
+    /* center circle (smaller and centered properly) */
     radial-gradient(
       circle at 50% 50%,
-      transparent 90%,  /* inner transparent */
-      #555 92%,         /* 2% ring thickness */
-      transparent 94%   /* outer transparent */
+      transparent 0%,
+      transparent 7%,
+      #555 8%,
+      transparent 9%
     ),
+
+    /* subtle floor texture */
+    radial-gradient(
+      #f2f2f2 1px,
+      transparent 1px
+    );
+
+  /* ===== Background repeat & size ===== */
+  background-repeat: no-repeat, no-repeat, repeat;
+  background-size:
+    100% 100%,   /* center line */
+    100% 100%,   /* center circle scales properly */
+    42px 42px;   /* floor texture */
+}
 
     /* subtle floor texture */
     radial-gradient(
