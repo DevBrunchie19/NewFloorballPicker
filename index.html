@@ -276,6 +276,16 @@ textarea { resize: none; min-height: 100px; }
 }
 
 
+/* ===== COLLAPSIBLE STYLES ===== */
+.collapsible-content { display: none; margin-top: 8px; transition: all 0.3s ease; }
+.collapse-toggle {
+  all: unset;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 1rem;
+  color: #3a52a3;
+}
+
   </style>
 </head>
 <body>
@@ -303,11 +313,17 @@ textarea { resize: none; min-height: 100px; }
   <div id="goalieChips" class="chips-container"></div>
 </div>
 
-<!-- Add Extra Players Card -->
+<!-- Add Extra Players Card (Collapsible) -->
 <div class="card">
-  <h3>Add Extra Players</h3>
-  <label for="names">Enter additional players (comma separated):</label>
-  <textarea id="names" rows="5" placeholder="Gretzky, McLovin, ..."></textarea>
+  <h3>
+    <button class="collapse-toggle" onclick="toggleExtraPlayers(this)">
+      Add Extra Players ⯆
+    </button>
+  </h3>
+  <div id="extraPlayersContent" class="collapsible-content">
+    <label for="names">Enter additional players (comma separated):</label>
+    <textarea id="names" rows="5" placeholder="Gretzky, McLovin, ..."></textarea>
+  </div>
 </div>
 
 <!-- Team Setup Card -->
@@ -325,8 +341,9 @@ textarea { resize: none; min-height: 100px; }
 <div class="button-wrapper">
   <img src="Floorball_Blk@2x.png" alt="Generate Teams" class="image-button" onclick="generateTeams()">
 </div>
-  
 <p id="buttonText">Click the floorball to generate teams</p>
+
+<!-- Shirt Template -->
 <svg id="shirt-template" style="display:none" viewBox="0 0 295.526 295.526" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
   <g fill="currentColor">
     <path d="M147.763,44.074c12.801,0,23.858-8.162,27.83-20.169c-7.578,2.086-17.237,3.345-27.83,3.345
@@ -340,6 +357,7 @@ textarea { resize: none; min-height: 100px; }
       c0.636,0.191,1.28,0.283,1.915,0.283c2.459,0,4.779-1.375,5.94-3.666l24.469-48.272C295.629,62.428,295.747,60.565,295.158,58.839z"/>
   </g>
 </svg>
+
 
 
 
@@ -361,14 +379,20 @@ textarea { resize: none; min-height: 100px; }
 
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
 <script>
 
-/* ===== FULL ORIGINAL JS WITH MINIMAL CHANGES ===== */
+/* ===== COLLAPSIBLE JS ===== */
+function toggleExtraPlayers(button) {
+  const content = document.getElementById("extraPlayersContent");
+  const isOpen = content.style.display === "block";
+  content.style.display = isOpen ? "none" : "block";
+  button.textContent = isOpen ? "Add Extra Players ⯆" : "Add Extra Players ⯅";
+}
 
 const commonPlayers=["Brunchie","Colin W-B","Nabber","Ben","Bill","Ron"];
-const unusualPlayers=["Eugene","Dawn"];  
-const goalies=["Colin D","Sam","Cloth G"];
+const unusualPlayers=["Dawn"];  
+const goalies=["Sam","Colin D","Cloth G"];
 
 /* =========================
    NEW: team history storage
