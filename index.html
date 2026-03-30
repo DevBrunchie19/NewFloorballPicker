@@ -24,30 +24,66 @@ h1 {
   color: #fff;
   font-size: clamp(1.5rem, 5vw, 2rem);
 }
-    textarea, input {
-      width: 100%;
-      display: block;
-      margin: 6px auto 12px auto;
-      padding: 12px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      font-size: 1rem;
-      box-sizing: border-box;
-    }
-    textarea { resize: none; min-height: 100px; }
-    .button-wrapper { display: flex; justify-content: center; }
-    .image-button {
-      display: block;
-      margin: 0 auto;
-      width: 85px;
-      height: auto;
-      cursor: pointer;
-      filter: invert(29%) sepia(74%) saturate(488%) hue-rotate(189deg) brightness(100%) contrast(103%);
-      transition: transform 0.15s ease;
-    }
-    .image-button:hover { transform: scale(1.1); }
-    .image-button:active { transform: scale(0.95); }
-    #buttonText { text-align:center; font-size:0.95rem; color:#555; margin-top:10px; }
+
+.tagline{
+  text-align:center;
+  margin-top:-6px;
+  margin-bottom:18px;
+  color:#555;
+  font-size:0.95rem;
+}
+
+  /* ===== CARD STYLES ===== */
+.card{
+  background:#ffffff;
+  padding:16px;
+  border-radius:12px;
+  margin-bottom:16px;
+  border:1px solid #ececec;
+  box-shadow:0 2px 6px rgba(0,0,0,0.04);
+}
+
+.card h3{
+  margin-top:0;
+  margin-bottom:10px;
+  font-size:1rem;
+  color:#333;
+}
+
+/* CHIP STYLES */
+textarea, input {
+  width: 100%;
+  display: block;
+  margin: 6px auto 12px auto;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+textarea { resize: none; min-height: 100px; }
+
+.chips-container { display:flex; flex-wrap:wrap; gap:8px; margin:8px 0 12px 0; }
+.chip { padding:8px 14px; background:#e0e0e0; border-radius:20px; cursor:pointer; font-size:0.95rem; transition:all 0.2s ease; user-select:none; }
+.chip:hover { background:#d0d0d0; }
+.chip.selected { background:#3a52a3; color:white; box-shadow:0 2px 6px rgba(0,0,0,0.15); }
+
+.team-size-container { display:flex; gap:8px; margin:6px 0 12px 0; }
+
+.button-wrapper { display: flex; justify-content: center; margin-top:10px; }
+.image-button {
+  display: block;
+  margin: 0 auto;
+  width: 85px;
+  height: auto;
+  cursor: pointer;
+  filter: invert(29%) sepia(74%) saturate(488%) hue-rotate(189deg) brightness(100%) contrast(103%);
+  transition: transform 0.15s ease;
+}
+.image-button:hover { transform: scale(1.1); }
+.image-button:active { transform: scale(0.95); }
+
+#buttonText { text-align:center; font-size:0.95rem; color:#555; margin-top:10px; }
    
   .team { 
      background: rgb(184 184 184 / 0%);
@@ -244,7 +280,53 @@ h1 {
 </head>
 <body>
 <h1>Floorball Team Picker</h1>
+<p class="tagline">Create balanced teams in seconds. No arguments. Just goals.</p>
 
+<!-- Players Card -->
+<div class="card">
+  <h3>Players</h3>
+  <div class="chips-header">
+    <label>The usual suspects:</label>
+    <button id="clearChipsBtn" type="button" onclick="clearAllPlayers()">Clear All</button>
+  </div>
+  <div id="playerChips" class="chips-container"></div>
+
+  <div class="chips-header">
+    <label>The unusual suspects:</label>
+  </div>
+  <div id="unusualChips" class="chips-container"></div>
+</div>
+
+<!-- Goalies Card -->
+<div class="card">
+  <h3>Goalies</h3>
+  <div id="goalieChips" class="chips-container"></div>
+</div>
+
+<!-- Add Extra Players Card -->
+<div class="card">
+  <h3>Add Extra Players</h3>
+  <label for="names">Enter additional players (comma separated):</label>
+  <textarea id="names" rows="5" placeholder="Gretzky, McLovin, ..."></textarea>
+</div>
+
+<!-- Team Setup Card -->
+<div class="card">
+  <h3>Team Setup</h3>
+  <label>Team size</label>
+  <div class="team-size-container">
+    <div class="chip" onclick="selectTeamSize(3,this)">3</div>
+    <div class="chip" onclick="selectTeamSize(5,this)">5</div>
+  </div>
+  <input type="number" id="teamSize" min="1" placeholder="Custom size">
+</div>
+
+<!-- CTA -->
+<div class="button-wrapper">
+  <img src="Floorball_Blk@2x.png" alt="Generate Teams" class="image-button" onclick="generateTeams()">
+</div>
+  
+<p id="buttonText">Click the floorball to generate teams</p>
 <svg id="shirt-template" style="display:none" viewBox="0 0 295.526 295.526" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
   <g fill="currentColor">
     <path d="M147.763,44.074c12.801,0,23.858-8.162,27.83-20.169c-7.578,2.086-17.237,3.345-27.83,3.345
@@ -259,34 +341,7 @@ h1 {
   </g>
 </svg>
 
-<div class="chips-header">
-  <label>The usual suspects:</label>
-  <button id="clearChipsBtn" type="button" onclick="clearAllPlayers()">Clear All</button>
-</div>
-<div id="playerChips" class="chips-container"></div>
 
-<div class="chips-header">
-  <label>The unusual suspects:</label>
-</div>
-<div id="unusualChips" class="chips-container"></div>
-
-<div class="chips-header"><label>Goalies:</label></div>
-<div id="goalieChips" class="chips-container"></div>
-
-<label for="names">Enter additional players (comma separated):</label>
-<textarea id="names" rows="5" placeholder="Gretzky, McLovin, ..."></textarea>
-
-<label for="teamSize">Team size:</label>
-<div class="team-size-container">
-  <div class="chip" onclick="selectTeamSize(3,this)">3</div>
-  <div class="chip" onclick="selectTeamSize(5,this)">5</div>
-</div>
-<input type="number" id="teamSize" min="1" placeholder="e.g. 3">
-
-<div class="button-wrapper">
-  <img src="Floorball_Blk@2x.png" alt="Generate Teams" class="image-button" onclick="generateTeams()">
-</div>
-<p id="buttonText">Click the floorball to generate teams</p>
 
 <!-- MODAL WRAPPER FOR GENERATED TEAMS -->
 <div id="teamsModal" class="modal" onclick="checkOutsideClick(event)">
