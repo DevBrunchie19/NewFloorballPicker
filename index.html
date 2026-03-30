@@ -883,9 +883,13 @@ function injectShirtsIntoTeam(teamEl){
 
 }
 
-function renderTeams(teams, teamSize, subsPerTeam) {
+function renderTeams(
+  teams,
+  teamSize,
+  subsPerTeam
+){
 
-  const teamNames = [
+  const teamNames=[
     "The Five-Hole Fiddlers",
     "Goal Diggers",
     "Ball Blazers",
@@ -903,109 +907,221 @@ function renderTeams(teams, teamSize, subsPerTeam) {
 
   shuffle(teamNames);
 
-  const out = document.getElementById("pitch");
-  out.innerHTML = ""; // clear previous content
+ const out=document.getElementById("pitch");
 
-  const pitchHeight = out.clientHeight;
-  const pitchWidth = out.clientWidth;
+  out.innerHTML="";
 
-  const teamPositions = [
-    { left: "5%", top: "20%" },   // Team 1
-    { right: "5%", top: "20%" }   // Team 2
-  ];
+  teams.forEach((team,i)=>{
 
-  teams.forEach((team, i) => {
+    const displayName=
+      teamNames[
+        i%teamNames.length
+      ];
 
-    const displayName = teamNames[i % teamNames.length];
+    let goalie=null;
 
-    let goalie = null;
-    let playersOnly = team.slice();
+    let playersOnly=
+      team.slice();
 
-    if (playersOnly[0] && playersOnly[0].includes("(G)")) {
-      goalie = playersOnly[0];
-      playersOnly = playersOnly.slice(1);
+    if(
+      playersOnly[0] &&
+      playersOnly[0].includes("(G)")
+    ){
+
+      goalie=playersOnly[0];
+
+      playersOnly=
+        playersOnly.slice(1);
+
     }
 
-    const subs = subsPerTeam[i] || [];
-    const subsVisible = subs.length > 0 ? "visible" : "";
-    const colour = teamColourByIndex(i, teams.length);
+    const subs=
+      subsPerTeam[i]||[];
 
-    // Create team container
-    const teamDiv = document.createElement("div");
-    teamDiv.className = "team";
-    teamDiv.style.setProperty("--team-colour", colour);
-    teamDiv.style.position = "absolute";
-    teamDiv.style.padding = "12px";
-    teamDiv.style.background = "rgba(255,255,255,0.9)";
-    teamDiv.style.borderRadius = "12px";
-    teamDiv.style.boxShadow = "0 2px 8px rgba(0,0,0,0.15)";
-    teamDiv.style.width = "40%";
+    const goalieTop=i%2===0;
 
-    // Position teams on pitch
-    const pos = teamPositions[i];
-    if (pos.left) teamDiv.style.left = pos.left;
-    if (pos.right) teamDiv.style.right = pos.right;
-    if (pos.top) teamDiv.style.top = pos.top;
+    const subsVisible=
+      subs.length>0
+      ?"visible":"";
 
-    // Team title
-    const title = document.createElement("div");
-    title.className = "team-title";
-    title.textContent = displayName;
-    teamDiv.appendChild(title);
+    const colour=
+      teamColourByIndex(
+        i,
+        teams.length
+      );
 
-    // Formation container
-    const formationContainer = document.createElement("div");
-    formationContainer.className = "formation-container";
+    if(teamSize===3){
 
-    // Formation layout
-    const formationLayout = document.createElement("div");
-    formationLayout.className = "formation-layout";
+      let top,midL,midR,bottom;
 
-    // Build rows dynamically
-    if (teamSize === 3) {
-      let top, midL, midR, bottom;
-      const goalieTop = i % 2 === 0;
-      if (goalieTop) {
-        top = goalie;
-        midL = playersOnly[0];
-        midR = playersOnly[1];
-        bottom = playersOnly[2];
-      } else {
-        top = playersOnly[0];
-        midL = playersOnly[1];
-        midR = playersOnly[2];
-        bottom = goalie;
+      if(goalieTop){
+
+        top=goalie;
+        midL=playersOnly[0];
+        midR=playersOnly[1];
+        bottom=playersOnly[2];
+
+      }else{
+
+        top=playersOnly[0];
+        midL=playersOnly[1];
+        midR=playersOnly[2];
+        bottom=goalie;
+
       }
-      formationLayout.innerHTML = `
-        ${centeredRow(top)}
-        ${twoAcrossRow(midL, midR)}
-        ${centeredRow(bottom)}
-      `;
-    } else if (teamSize === 5) {
-      const p = [...playersOnly];
-      const g = goalie || "";
-      const goalieTop = i % 2 === 0;
-      formationLayout.innerHTML = goalieTop
-        ? `${centeredRow(g)}${twoAcrossRow(p[0], p[1])}${threeAcrossRow(p[2], p[3], p[4])}`
-        : `${threeAcrossRow(p[0], p[1], p[2])}${twoAcrossRow(p[3], p[4])}${centeredRow(g)}`;
+
+      out.insertAdjacentHTML(
+        "beforeend",
+
+`
+<div class="team"
+style="--team-colour:${colour}">
+
+<div class="team-title">
+${displayName}
+</div>
+
+<div class="formation-container">
+
+<div class="formation-layout">
+
+${centeredRow(top)}
+
+${twoAcrossRow(midL,midR)}
+
+${centeredRow(bottom)}
+
+</div>
+
+<div class="subs-section ${subsVisible}">
+
+<div style="font-weight:bold;">
+Subs
+</div>
+
+${subs
+.map(
+s=>`<div class="sub-card">
+${formatPlayer(s)}
+</div>`
+)
+.join("")}
+
+</div>
+
+</div>
+
+</div>`
+
+);
+
+      return;
+
     }
 
-    formationContainer.appendChild(formationLayout);
+    if(teamSize===5){
 
-    // Subs section
-    const subsDiv = document.createElement("div");
-    subsDiv.className = `subs-section ${subsVisible}`;
-    subsDiv.innerHTML = `<div style="font-weight:bold;">Subs</div>` + subs
-      .map(s => `<div class="sub-card">${formatPlayer(s)}</div>`)
-      .join("");
-    formationContainer.appendChild(subsDiv);
+      const p=[...playersOnly];
 
-    teamDiv.appendChild(formationContainer);
-    out.appendChild(teamDiv);
+      const g=goalie||"";
 
-    injectShirtsIntoTeam(teamDiv);
+      let layoutHtml=
+        goalieTop
+        ?
+
+`
+${centeredRow(g)}
+
+${twoAcrossRow(p[0],p[1])}
+
+${threeAcrossRow(
+p[2],
+p[3],
+p[4]
+)}
+`
+
+        :
+
+`
+${threeAcrossRow(
+p[0],
+p[1],
+p[2]
+)}
+
+${twoAcrossRow(p[3],p[4])}
+
+${centeredRow(g)}
+`;
+
+      out.insertAdjacentHTML(
+
+        "beforeend",
+
+`
+<div class="team"
+style="--team-colour:${colour}">
+
+<div class="team-title">
+${displayName}
+</div>
+
+<div class="formation-container">
+
+<div class="formation-layout">
+
+${layoutHtml}
+
+</div>
+
+<div class="subs-section ${subsVisible}">
+
+<div style="font-weight:bold;">
+Subs
+</div>
+
+${subs
+.map(
+s=>`<div class="sub-card">
+${formatPlayer(s)}
+</div>`
+)
+.join("")}
+
+</div>
+
+</div>
+
+</div>`
+
+);
+
+    }
 
   });
+
+  document
+    .querySelectorAll('.team')
+    .forEach(teamEl=>{
+
+      const teamColour=
+        teamEl
+        .style
+        .getPropertyValue('--team-colour')
+        ||'#3a52a3';
+
+      teamEl
+        .style
+        .setProperty(
+          '--team-colour',
+          teamColour.trim()
+        );
+
+      injectShirtsIntoTeam(teamEl);
+
+    });
+
 }
 
 /* remaining helpers unchanged */
