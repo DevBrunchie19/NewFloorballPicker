@@ -349,7 +349,7 @@ textarea { resize: none; min-height: 100px; }
   </div>
 </div>
 
-<!-- Team Setup Card (Now Fully Collapsible) -->
+<!-- Team Setup Card (Collapsed on load, default team size 3 selected) -->
 <div class="card">
   <h3>
     <button class="collapse-toggle" onclick="toggleTeamSizeOptions(this)">
@@ -425,10 +425,13 @@ function toggleTeamSizeOptions(button) {
   button.textContent = isOpen ? "Team Size Options ⯆" : "Team Size Options ⯅";
 }
 
-/* Default team size selection */
+/* Default team size selection and collapse on load */
 window.addEventListener("DOMContentLoaded", ()=>{
     const defaultChip = document.querySelector("#teamSizeContent .chip");
     selectTeamSize(3, defaultChip);
+
+    // Ensure team size card starts collapsed
+    document.getElementById("teamSizeContent").style.display = "none";
 });
   
 const commonPlayers=["Brunchie","Colin W-B","Nabber","Ben","Bill","Ron"];
