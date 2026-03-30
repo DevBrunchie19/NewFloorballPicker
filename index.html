@@ -309,6 +309,32 @@ textarea { resize: none; min-height: 100px; }
   color: #3a52a3;
 }
 
+/* Row wrapper for side-by-side collapsibles */
+.collapsible-row {
+  display: flex;
+  gap: 16px;           /* space between the two cards */
+  flex-wrap: wrap;      /* wrap to new line on smaller screens */
+}
+
+/* Each card in the row */
+.collapsible-card {
+  flex: 1 1 300px;     /* grow, shrink, and minimum width */
+  box-sizing: border-box;
+}
+
+/* Ensure team size chips and input still stay side by side */
+.team-size-flex {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.team-size-flex input {
+  flex: 1;
+  min-width: 80px;
+}
+
   </style>
 </head>
 <body>
@@ -336,32 +362,36 @@ textarea { resize: none; min-height: 100px; }
   <div id="goalieChips" class="chips-container"></div>
 </div>
 
-<!-- Add Extra Players Card (Collapsible) -->
-<div class="card">
-  <h3>
-    <button class="collapse-toggle" onclick="toggleExtraPlayers(this)">
-      Add Extra Players ⯆
-    </button>
-  </h3>
-  <div id="extraPlayersContent" class="collapsible-content">
-    <label for="names">Enter additional players (comma separated):</label>
-    <textarea id="names" rows="5" placeholder="Gretzky, McLovin, ..."></textarea>
-  </div>
-</div>
-
-<!-- Team Setup Card (Collapsed on load, default team size 3 selected) -->
-<div class="card">
-  <h3>
-    <button class="collapse-toggle" onclick="toggleTeamSizeOptions(this)">
-      Team Size Options ⯆
-    </button>
-  </h3>
-  <div id="teamSizeContent" class="collapsible-content">
-    <div class="team-size-container">
-      <div class="chip" onclick="selectTeamSize(3,this)">3</div>
-      <div class="chip" onclick="selectTeamSize(5,this)">5</div>
+<div class="collapsible-row">
+  <!-- Add Extra Players Card -->
+  <div class="card collapsible-card">
+    <h3>
+      <button class="collapse-toggle" onclick="toggleExtraPlayers(this)">
+        Add Extra Players ⯆
+      </button>
+    </h3>
+    <div id="extraPlayersContent" class="collapsible-content">
+      <label for="names">Enter additional players (comma separated):</label>
+      <textarea id="names" rows="5" placeholder="Gretzky, McLovin, ..."></textarea>
     </div>
-    <input type="number" id="teamSize" min="1" placeholder="Custom size" value="3">
+  </div>
+
+  <!-- Team Setup Card -->
+  <div class="card collapsible-card">
+    <h3>
+      <button class="collapse-toggle" onclick="toggleTeamSizeOptions(this)">
+        Team Size Options ⯆
+      </button>
+    </h3>
+    <div id="teamSizeContent" class="collapsible-content">
+      <div class="team-size-flex">
+        <div class="team-size-container">
+          <div class="chip" onclick="selectTeamSize(3,this)">3</div>
+          <div class="chip" onclick="selectTeamSize(5,this)">5</div>
+        </div>
+        <input type="number" id="teamSize" min="1" placeholder="Custom size" value="3">
+      </div>
+    </div>
   </div>
 </div>
 
