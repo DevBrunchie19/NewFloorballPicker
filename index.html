@@ -596,16 +596,19 @@ function togglePlayer(name,chip){
 
   t.value=n.join(", ");
 
-  localStorage.setItem(SELECTED_PLAYERS_KEY, JSON.stringify(n));
+  localStorage.setItem(
+    SELECTED_PLAYERS_KEY,
+    JSON.stringify(n)
+  );
 
   updateClearButtonVisibility();
 }
-
 function toggleGoalie(name,chip){
 
   chip.classList.toggle("selected");
 
-  const selectedGoalies = getSelectedGoalies();
+  const selectedGoalies =
+    getSelectedGoalies();
 
   localStorage.setItem(
     SELECTED_GOALIES_KEY,
@@ -614,7 +617,6 @@ function toggleGoalie(name,chip){
 
   updateClearButtonVisibility();
 }
-
 function buildFinalPlayerPool(){
 
   return document
@@ -690,6 +692,91 @@ function shuffle(a){
 
 }
 
+function restoreSelections(){
+
+  const savedPlayers =
+    JSON.parse(
+      localStorage.getItem(
+        SELECTED_PLAYERS_KEY
+      ) || "[]"
+    );
+
+  const savedGoalies =
+    JSON.parse(
+      localStorage.getItem(
+        SELECTED_GOALIES_KEY
+      ) || "[]"
+    );
+
+  document.getElementById("names").value =
+    savedPlayers.join(", ");
+
+  document
+    .querySelectorAll(
+      "#playerChips .chip, #unusualChips .chip"
+    )
+    .forEach(chip=>{
+
+      if(
+        savedPlayers.includes(
+          chip.textContent.trim()
+        )
+      ){
+        chip.classList.add("selected");
+      }
+
+    });
+
+  document
+    .querySelectorAll(
+      "#goalieChips .chip"
+    )
+    .forEach(chip=>{
+
+      if(
+        savedGoalies.includes(
+          chip.textContent.trim()
+        )
+      ){
+        chip.classList.add("selected");
+      }
+
+    });
+
+  updateClearButtonVisibility();
+}
+
+
+function handleManualPlayerInput(){
+
+  const names =
+    buildFinalPlayerPool();
+
+  localStorage.setItem(
+    SELECTED_PLAYERS_KEY,
+    JSON.stringify(names)
+  );
+
+  document
+    .querySelectorAll(
+      "#playerChips .chip, #unusualChips .chip"
+    )
+    .forEach(chip=>{
+
+      const player =
+        chip.textContent.trim();
+
+      chip.classList.toggle(
+        "selected",
+        names.includes(player)
+      );
+
+    });
+
+  updateClearButtonVisibility();
+
+}
+  
 function generateTeams(){
 
   let players=
@@ -751,39 +838,8 @@ function restoreSelections(){
   updateClearButtonVisibility();
 }
 
- function restoreSelections(){
-  ...
-}
 
-/* keep textarea and chips synced */
-function handleManualPlayerInput(){
 
-  const names =
-    buildFinalPlayerPool();
-
-  localStorage.setItem(
-    SELECTED_PLAYERS_KEY,
-    JSON.stringify(names)
-  );
-
-  document
-    .querySelectorAll(
-      "#playerChips .chip, #unusualChips .chip"
-    )
-    .forEach(chip=>{
-
-      const player =
-        chip.textContent.trim();
-
-      chip.classList.toggle(
-        "selected",
-        names.includes(player)
-      );
-
-    });
-
-  updateClearButtonVisibility();
-} 
   
   const modal =
   document.getElementById("teamsModal");
@@ -1414,24 +1470,22 @@ function shareTeams(){
 
 }
 
-window.addEventListener(
-"DOMContentLoaded",
-()=>{
+window.addEventListener("DOMContentLoaded", ()=>{
 
   createPlayerChips();
   createUnusualPlayerChips();
   createGoalieChips();
 
-  restoreSelections();   // MUST come after chip creation
+  restoreSelections();
 
   updateClearButtonVisibility();
 
-document
-  .getElementById("names")
-  .addEventListener(
-    "input",
-    handleManualPlayerInput
-  );
+  document
+    .getElementById("names")
+    .addEventListener(
+      "input",
+      handleManualPlayerInput
+    );
 
 });
 
