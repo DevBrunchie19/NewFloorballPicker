@@ -472,6 +472,9 @@ const commonPlayers=["Brunchie","Colin W-B","Nabber","Ben","Bill","Ron"];
 const unusualPlayers=["Dawn"];  
 const goalies=["Sam","Cloth","Colin D"];
 
+const SELECTED_PLAYERS_KEY = "floorball_selected_players";
+const SELECTED_GOALIES_KEY = "floorball_selected_goalies";
+
 /* =========================
    NEW: team history storage
 ========================= */
@@ -584,31 +587,32 @@ function togglePlayer(name,chip){
     .filter(Boolean);
 
   if(n.includes(name)){
-
     n=n.filter(x=>x!==name);
-
     chip.classList.remove("selected");
-
   }else{
-
     n.push(name);
-
     chip.classList.add("selected");
-
   }
 
   t.value=n.join(", ");
 
-  updateClearButtonVisibility();
+  localStorage.setItem(SELECTED_PLAYERS_KEY, JSON.stringify(n));
 
+  updateClearButtonVisibility();
 }
 
 function toggleGoalie(name,chip){
 
   chip.classList.toggle("selected");
 
-  updateClearButtonVisibility();
+  const selectedGoalies = getSelectedGoalies();
 
+  localStorage.setItem(
+    SELECTED_GOALIES_KEY,
+    JSON.stringify(selectedGoalies)
+  );
+
+  updateClearButtonVisibility();
 }
 
 function buildFinalPlayerPool(){
@@ -709,6 +713,39 @@ function generateTeams(){
     return;
 
   }
+
+function restoreSelections(){
+
+  const savedPlayers =
+    JSON.parse(localStorage.getItem(SELECTED_PLAYERS_KEY) || "[]");
+
+  const savedGoalies =
+    JSON.parse(localStorage.getItem(SELECTED_GOALIES_KEY) || "[]");
+
+  // restore player textarea
+  document.getElementById("names").value =
+    savedPlayers.join(", ");
+
+  // restore player chips
+  document
+    .querySelectorAll("#playerChips .chip, #unusualChips .chip")
+    .forEach(chip=>{
+      if(savedPlayers.includes(chip.textContent.trim())){
+        chip.classList.add("selected");
+      }
+    });
+
+  // restore goalie chips
+  document
+    .querySelectorAll("#goalieChips .chip")
+    .forEach(chip=>{
+      if(savedGoalies.includes(chip.textContent.trim())){
+        chip.classList.add("selected");
+      }
+    });
+
+  updateClearButtonVisibility();
+}
 
   const modal =
   document.getElementById("teamsModal");
@@ -1344,10 +1381,10 @@ window.addEventListener(
 ()=>{
 
   createPlayerChips();
-
   createUnusualPlayerChips();
-
   createGoalieChips();
+
+  restoreSelections(); // <-- add this
 
   updateClearButtonVisibility();
 
