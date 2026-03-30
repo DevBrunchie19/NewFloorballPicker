@@ -154,11 +154,11 @@ textarea { resize: none; min-height: 100px; }
 #pitch {
   position: relative;
   width: 100%;
-  height: 400px;           /* taller for tactical layout */
+  height: 400px; /* enough room for two teams facing each other */
   border-radius: 12px;
-  background-color: #3aa14f; /* green pitch color */
+  background-color: #1b3e82; /* indoor floorball blue (Unihoc style) */
   overflow: hidden;
-  border: 2px solid #2d8b3b;
+  border: 2px solid #142c5a;
 
   /* ===== Background layers ===== */
   background-image:
@@ -182,40 +182,31 @@ textarea { resize: none; min-height: 100px; }
     /* Goal areas (top and bottom) */
     linear-gradient(
       to bottom,
-      rgba(230,243,255,0.6) 0%,
-      rgba(230,243,255,0.6) 10%,
+      rgba(255,255,255,0.15) 0%,
+      rgba(255,255,255,0.15) 10%,
       transparent 10%,
       transparent 90%,
-      rgba(230,243,255,0.6) 90%,
-      rgba(230,243,255,0.6) 100%
+      rgba(255,255,255,0.15) 90%,
+      rgba(255,255,255,0.15) 100%
     ),
 
-    /* Side boundaries (optional subtle lines) */
-    linear-gradient(
-      to right,
-      transparent 5px,
-      rgba(255,255,255,0.15) 5px,
-      rgba(255,255,255,0.15) calc(100% - 5px),
-      transparent calc(100% - 5px)
-    ),
-
-    /* Subtle floor texture */
+    /* Rubber floor subtle texture */
     radial-gradient(
-      rgba(255,255,255,0.05) 1px,
+      rgba(255,255,255,0.03) 1px,
       transparent 1px
     );
 
   /* ===== Background repeat & size ===== */
-  background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, repeat;
+  background-repeat: no-repeat, no-repeat, no-repeat, repeat;
   background-size:
     100% 100%,  /* center line */
     100% 100%,  /* center circle */
     100% 100%,  /* goal areas */
-    100% 100%,  /* side boundaries */
-    40px 40px;  /* floor texture */
+    20px 20px;  /* floor texture */
 }
 
-  
+
+  /* dont edit below */
     .subs-section.visible { display:block; }
     .sub-card {
       padding:6px 10px;
