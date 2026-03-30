@@ -338,20 +338,18 @@ textarea { resize: none; min-height: 100px; }
 }
 
 /* starting positions */
-.pitch-half:first-child .team{
-  transform: translateY(-40px);
-  opacity:0;
-}
-
-.pitch-half:last-child .team{
+.team {
   transform: translateY(40px);
-  opacity:0;
+  opacity: 0;
+  transition: transform 0.8s ease, opacity 0.8s ease;
 }
 
-/* animate in */
-.team.animate-in{
-  animation: slideFadeIn 0.8s ease forwards;
+.team.animate-in {
+  transform: translateY(0);
+  opacity: 1;
 }
+
+
 
 /* keyframes */
 @keyframes slideFadeIn{
@@ -1087,11 +1085,7 @@ function injectShirtsIntoTeam(teamEl){
 
   });
   
-setTimeout(() => {
-  document
-    .querySelectorAll(".team")
-    .forEach(t => t.classList.add("animate-in"));
-}, 50);
+
 }
 
 function renderTeams(
@@ -1332,7 +1326,12 @@ ${formatPlayer(s)}
       injectShirtsIntoTeam(teamEl);
 
     });
-
+// Trigger slide animation for all teams after they exist
+setTimeout(() => {
+  document.querySelectorAll(".team").forEach(teamEl => {
+    teamEl.classList.add("animate-in");
+  });
+}, 50);
 }
 
 /* remaining helpers unchanged */
