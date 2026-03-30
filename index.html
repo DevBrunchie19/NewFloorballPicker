@@ -83,7 +83,11 @@ textarea { resize: none; min-height: 100px; }
 .image-button:hover { transform: scale(1.1); }
 .image-button:active { transform: scale(0.95); }
 
-#buttonText { text-align:center; font-size:0.95rem; color:#555; margin-top:10px; }
+#buttonText { 
+  text-align:center; 
+  font-size:0.95rem; 
+  color:#555; 
+  margin-top:10px; }
    
   .team { 
      background: rgb(184 184 184 / 0%);
@@ -94,13 +98,26 @@ textarea { resize: none; min-height: 100px; }
       --team-colour: #3a52a3; 
     }
   
-    .chips-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
-    #clearChipsBtn {
-      background: #3a52a3; color:white; border:none; border-radius:16px;
-      padding:6px 12px; cursor:pointer; font-size:0.9rem;
-      transition: background 0.2s ease, transform 0.1s ease, opacity 0.3s ease;
-      opacity:0; pointer-events:none;
+    .chips-header { 
+      display:flex; 
+      justify-content:space-between; 
+      align-items:center; 
+      margin-bottom:6px; 
     }
+  
+    #clearChipsBtn {
+      background: #3a52a3; 
+      color:white; 
+      border:none; 
+      border-radius:16px;
+      padding:6px 12px;
+      cursor:pointer; 
+      font-size:0.9rem;
+      transition: background 0.2s ease, transform 0.1s ease, opacity 0.3s ease;
+      opacity:0;
+      pointer-events:none;
+    }
+  
     #clearChipsBtn.visible { opacity:1; pointer-events:auto; }
     #clearChipsBtn:hover { background:#516fd3; }
     #clearChipsBtn:active { transform:scale(0.95); }
@@ -137,13 +154,9 @@ textarea { resize: none; min-height: 100px; }
 #pitch{
 
   position:relative;
-
   padding:60px 20px;
-
   border-radius:18px;
-
   background-color:#ffffff;
-
   background-image:
 
     /* centre line */
@@ -290,7 +303,7 @@ textarea { resize: none; min-height: 100px; }
 </head>
 <body>
 <h1>Floorball Team Picker</h1>
-<p class="tagline">Create balanced teams in seconds. No arguments. Just goals.</p>
+<p class="tagline">Completely <em>random</em> all the time.</p>
 
 <!-- Players Card -->
 <div class="card">
