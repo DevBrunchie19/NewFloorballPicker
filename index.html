@@ -339,14 +339,26 @@ textarea { resize: none; min-height: 100px; }
 
 /* starting positions */
 .team {
-  transform: translateY(40px);
   opacity: 0;
+  transform: translateY(var(--slide-start, 0px));
   transition: transform 0.8s ease, opacity 0.8s ease;
 }
 
 .team.animate-in {
   transform: translateY(0);
   opacity: 1;
+}
+
+/* players pop in with scale & fade */
+.player-icon {
+  opacity: 0;
+  transform: scale(0.6);
+  transition: transform 0.5s ease, opacity 0.5s ease;
+}
+
+.player-icon.animate-in {
+  opacity: 1;
+  transform: scale(1);
 }
 
 
@@ -1326,12 +1338,20 @@ ${formatPlayer(s)}
       injectShirtsIntoTeam(teamEl);
 
     });
-// Trigger slide animation for all teams after they exist
-setTimeout(() => {
-  document.querySelectorAll(".team").forEach(teamEl => {
+  // Animate the team sliding in first
+  setTimeout(() => {
     teamEl.classList.add("animate-in");
+  }, 50);
+
+  // Animate each player in the team with stagger
+  const players = teamEl.querySelectorAll(".player-icon");
+  players.forEach((player, i) => {
+    setTimeout(() => {
+      player.classList.add("animate-in");
+    }, 200 + i * 150); // delay each player 150ms after the team
   });
-}, 50);
+
+});
 }
 
 /* remaining helpers unchanged */
