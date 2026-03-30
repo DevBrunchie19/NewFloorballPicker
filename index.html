@@ -543,23 +543,24 @@ function generateTeams(){
   }
 
   const modal =
-    document.getElementById("teamsModal");
+  document.getElementById("teamsModal");
 
-  const output =
-    document.getElementById("output");
+const pitch =
+  document.getElementById("pitch");
 
-  const toolbar =
-    document.getElementById("exportToolbar");
+const toolbar =
+  document.getElementById("exportToolbar");
 
-  modal.classList.add("visible");
+modal.classList.add("visible");
 
-  toolbar.style.display="none";
+toolbar.style.display="none";
 
-  output.innerHTML =
-    `<div id="generating">
-      Generating teams…
-    </div>`;
+pitch.innerHTML =
+  `<div id="generating">
+    Generating teams…
+  </div>`;
 
+  
   setTimeout(()=>{
 
     if(selectedGoalies.length){
