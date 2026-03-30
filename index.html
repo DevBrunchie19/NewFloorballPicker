@@ -1384,16 +1384,16 @@ window.addEventListener(
   createUnusualPlayerChips();
   createGoalieChips();
 
-  restoreSelections(); // <-- add this
+  restoreSelections();   // MUST come after chip creation
 
   updateClearButtonVisibility();
 
   document
-  .getElementById("names")
-  .addEventListener(
-    "input",
-    updateClearButtonVisibility
-  );
+    .getElementById("names")
+    .addEventListener(
+      "input",
+      handleManualPlayerInput
+    );
 
 });
 
