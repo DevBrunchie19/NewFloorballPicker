@@ -349,15 +349,20 @@ textarea { resize: none; min-height: 100px; }
   </div>
 </div>
 
-<!-- Team Setup Card -->
+<!-- Team Setup Card (Now Fully Collapsible) -->
 <div class="card">
-  <h3>Team Setup</h3>
-  <label>Team size</label>
-  <div class="team-size-container">
-    <div class="chip" onclick="selectTeamSize(3,this)">3</div>
-    <div class="chip" onclick="selectTeamSize(5,this)">5</div>
+  <h3>
+    <button class="collapse-toggle" onclick="toggleTeamSizeOptions(this)">
+      Team Size Options ⯆
+    </button>
+  </h3>
+  <div id="teamSizeContent" class="collapsible-content">
+    <div class="team-size-container">
+      <div class="chip" onclick="selectTeamSize(3,this)">3</div>
+      <div class="chip" onclick="selectTeamSize(5,this)">5</div>
+    </div>
+    <input type="number" id="teamSize" min="1" placeholder="Custom size" value="3">
   </div>
-  <input type="number" id="teamSize" min="1" placeholder="Custom size">
 </div>
 
 <!-- CTA -->
@@ -413,6 +418,19 @@ function toggleExtraPlayers(button) {
   button.textContent = isOpen ? "Add Extra Players ⯆" : "Add Extra Players ⯅";
 }
 
+function toggleTeamSizeOptions(button) {
+  const content = document.getElementById("teamSizeContent");
+  const isOpen = content.style.display === "block";
+  content.style.display = isOpen ? "none" : "block";
+  button.textContent = isOpen ? "Team Size Options ⯆" : "Team Size Options ⯅";
+}
+
+/* Default team size selection */
+window.addEventListener("DOMContentLoaded", ()=>{
+    const defaultChip = document.querySelector("#teamSizeContent .chip");
+    selectTeamSize(3, defaultChip);
+});
+  
 const commonPlayers=["Brunchie","Colin W-B","Nabber","Ben","Bill","Ron"];
 const unusualPlayers=["Dawn"];  
 const goalies=["Sam","Colin D","Cloth G"];
