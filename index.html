@@ -337,6 +337,32 @@ textarea { resize: none; min-height: 100px; }
   min-width: 80px;
 }
 
+/* starting positions */
+.pitch-half:first-child .team{
+  transform: translateY(-40px);
+  opacity:0;
+}
+
+.pitch-half:last-child .team{
+  transform: translateY(40px);
+  opacity:0;
+}
+
+/* animate in */
+.team.animate-in{
+  animation: slideFadeIn 0.45s ease forwards;
+}
+
+/* keyframes */
+@keyframes slideFadeIn{
+  to{
+    transform: translateY(0);
+    opacity:1;
+  }
+}
+
+  
+
   </style>
 </head>
 <body>
@@ -1027,6 +1053,8 @@ function teamColourByIndex(index,totalTeams){
 
 function injectShirtsIntoTeam(teamEl){
 
+
+  
   const template=
     document.getElementById('shirt-template');
 
@@ -1058,7 +1086,12 @@ function injectShirtsIntoTeam(teamEl){
     w.appendChild(clone);
 
   });
-
+  
+setTimeout(() => {
+  document
+    .querySelectorAll(".team")
+    .forEach(t => t.classList.add("animate-in"));
+}, 50);
 }
 
 function renderTeams(
