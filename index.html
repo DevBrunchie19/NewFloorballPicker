@@ -1191,16 +1191,10 @@ function renderTeams(
         "beforeend",
 
 `
-<div class="team"
-style="--team-colour:${colour}">
-
-<div class="team-title">
-${displayName}
-</div>
-
-<div class="formation-container">
-
-<div class="formation-layout">
+ <div class="team" style="--team-colour:${colour}; --slide-start:${slideStart}">
+    <div class="team-title">${displayName}</div>
+    <div class="formation-container">
+      <div class="formation-layout">
 
 ${centeredRow(top)}
 
@@ -1210,23 +1204,11 @@ ${centeredRow(bottom)}
 
 </div>
 
-<div class="subs-section ${subsVisible}">
-
-<div style="font-weight:bold;">
-Subs
-</div>
-
-${subs
-.map(
-s=>`<div class="sub-card">
-${formatPlayer(s)}
-</div>`
-)
-.join("")}
-
-</div>
-
-</div>
+ <div class="subs-section ${subsVisible}">
+        <div style="font-weight:bold;">Subs</div>
+        ${subs.map(s=>`<div class="sub-card">${formatPlayer(s)}</div>`).join("")}
+      </div>
+    </div>
 
 </div>`
 
@@ -1342,6 +1324,10 @@ ${formatPlayer(s)}
   setTimeout(() => {
     teamEl.classList.add("animate-in");
   }, 50);
+
+  // Determine slide direction for animation
+// Team 0 = top (-40px), Team 1 = bottom (+40px)
+const slideStart = i === 0 ? '-40px' : '40px';
 
   // Animate each player in the team with stagger
   const players = teamEl.querySelectorAll(".player-icon");
