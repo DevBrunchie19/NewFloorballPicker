@@ -716,6 +716,7 @@ function generateTeams(){
 
 function restoreSelections(){
 
+  
   const savedPlayers =
     JSON.parse(localStorage.getItem(SELECTED_PLAYERS_KEY) || "[]");
 
@@ -733,8 +734,11 @@ function restoreSelections(){
       if(savedPlayers.includes(chip.textContent.trim())){
         chip.classList.add("selected");
       }
+
+      
     });
 
+  
   // restore goalie chips
   document
     .querySelectorAll("#goalieChips .chip")
@@ -747,6 +751,40 @@ function restoreSelections(){
   updateClearButtonVisibility();
 }
 
+ function restoreSelections(){
+  ...
+}
+
+/* keep textarea and chips synced */
+function handleManualPlayerInput(){
+
+  const names =
+    buildFinalPlayerPool();
+
+  localStorage.setItem(
+    SELECTED_PLAYERS_KEY,
+    JSON.stringify(names)
+  );
+
+  document
+    .querySelectorAll(
+      "#playerChips .chip, #unusualChips .chip"
+    )
+    .forEach(chip=>{
+
+      const player =
+        chip.textContent.trim();
+
+      chip.classList.toggle(
+        "selected",
+        names.includes(player)
+      );
+
+    });
+
+  updateClearButtonVisibility();
+} 
+  
   const modal =
   document.getElementById("teamsModal");
 
@@ -1388,12 +1426,12 @@ window.addEventListener(
 
   updateClearButtonVisibility();
 
-  document
-    .getElementById("names")
-    .addEventListener(
-      "input",
-      handleManualPlayerInput
-    );
+document
+  .getElementById("names")
+  .addEventListener(
+    "input",
+    handleManualPlayerInput
+  );
 
 });
 
