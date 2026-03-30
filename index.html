@@ -154,13 +154,15 @@ textarea { resize: none; min-height: 100px; }
 #pitch {
   position: relative;
   width: 100%;
-  height: 300px;
+  height: 400px;           /* taller for tactical layout */
   border-radius: 12px;
-  background-color: #3aa14f; /* green floorball pitch */
+  background-color: #3aa14f; /* green pitch color */
+  overflow: hidden;
+  border: 2px solid #2d8b3b;
 
   /* ===== Background layers ===== */
   background-image:
-    /* center line */
+    /* Center line */
     linear-gradient(
       to bottom,
       transparent 49.5%,
@@ -168,42 +170,50 @@ textarea { resize: none; min-height: 100px; }
       transparent 50.5%
     ),
 
-    /* center circle */
+    /* Center circle */
     radial-gradient(
       circle at 50% 50%,
       transparent 0%,
-      transparent 12%,   /* inner radius */
-      #fff 13%,          /* circle line */
+      transparent 12%, /* inner radius */
+      #fff 13%,        /* circle line */
       transparent 14%
     ),
 
-    /* goal areas - top & bottom */
+    /* Goal areas (top and bottom) */
     linear-gradient(
       to bottom,
-      #e6f3ff 0%,
-      #e6f3ff 8%,
-      transparent 8%,
-      transparent 92%,
-      #e6f3ff 92%,
-      #e6f3ff 100%
+      rgba(230,243,255,0.6) 0%,
+      rgba(230,243,255,0.6) 10%,
+      transparent 10%,
+      transparent 90%,
+      rgba(230,243,255,0.6) 90%,
+      rgba(230,243,255,0.6) 100%
     ),
 
-    /* subtle floor texture */
+    /* Side boundaries (optional subtle lines) */
+    linear-gradient(
+      to right,
+      transparent 5px,
+      rgba(255,255,255,0.15) 5px,
+      rgba(255,255,255,0.15) calc(100% - 5px),
+      transparent calc(100% - 5px)
+    ),
+
+    /* Subtle floor texture */
     radial-gradient(
       rgba(255,255,255,0.05) 1px,
       transparent 1px
     );
 
   /* ===== Background repeat & size ===== */
-  background-repeat: no-repeat, no-repeat, no-repeat, repeat;
+  background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, repeat;
   background-size:
     100% 100%,  /* center line */
     100% 100%,  /* center circle */
     100% 100%,  /* goal areas */
+    100% 100%,  /* side boundaries */
     40px 40px;  /* floor texture */
 }
-
-  
 
   
     .subs-section.visible { display:block; }
@@ -882,13 +892,9 @@ function injectShirtsIntoTeam(teamEl){
 
 }
 
-function renderTeams(
-  teams,
-  teamSize,
-  subsPerTeam
-){
+function renderTeams(teams, teamSize, subsPerTeam) {
 
-  const teamNames=[
+  const teamNames = [
     "The Five-Hole Fiddlers",
     "Goal Diggers",
     "Ball Blazers",
@@ -906,221 +912,109 @@ function renderTeams(
 
   shuffle(teamNames);
 
- const out=document.getElementById("pitch");
+  const out = document.getElementById("pitch");
+  out.innerHTML = ""; // clear previous content
 
-  out.innerHTML="";
+  const pitchHeight = out.clientHeight;
+  const pitchWidth = out.clientWidth;
 
-  teams.forEach((team,i)=>{
+  const teamPositions = [
+    { left: "5%", top: "20%" },   // Team 1
+    { right: "5%", top: "20%" }   // Team 2
+  ];
 
-    const displayName=
-      teamNames[
-        i%teamNames.length
-      ];
+  teams.forEach((team, i) => {
 
-    let goalie=null;
+    const displayName = teamNames[i % teamNames.length];
 
-    let playersOnly=
-      team.slice();
+    let goalie = null;
+    let playersOnly = team.slice();
 
-    if(
-      playersOnly[0] &&
-      playersOnly[0].includes("(G)")
-    ){
-
-      goalie=playersOnly[0];
-
-      playersOnly=
-        playersOnly.slice(1);
-
+    if (playersOnly[0] && playersOnly[0].includes("(G)")) {
+      goalie = playersOnly[0];
+      playersOnly = playersOnly.slice(1);
     }
 
-    const subs=
-      subsPerTeam[i]||[];
+    const subs = subsPerTeam[i] || [];
+    const subsVisible = subs.length > 0 ? "visible" : "";
+    const colour = teamColourByIndex(i, teams.length);
 
-    const goalieTop=i%2===0;
+    // Create team container
+    const teamDiv = document.createElement("div");
+    teamDiv.className = "team";
+    teamDiv.style.setProperty("--team-colour", colour);
+    teamDiv.style.position = "absolute";
+    teamDiv.style.padding = "12px";
+    teamDiv.style.background = "rgba(255,255,255,0.9)";
+    teamDiv.style.borderRadius = "12px";
+    teamDiv.style.boxShadow = "0 2px 8px rgba(0,0,0,0.15)";
+    teamDiv.style.width = "40%";
 
-    const subsVisible=
-      subs.length>0
-      ?"visible":"";
+    // Position teams on pitch
+    const pos = teamPositions[i];
+    if (pos.left) teamDiv.style.left = pos.left;
+    if (pos.right) teamDiv.style.right = pos.right;
+    if (pos.top) teamDiv.style.top = pos.top;
 
-    const colour=
-      teamColourByIndex(
-        i,
-        teams.length
-      );
+    // Team title
+    const title = document.createElement("div");
+    title.className = "team-title";
+    title.textContent = displayName;
+    teamDiv.appendChild(title);
 
-    if(teamSize===3){
+    // Formation container
+    const formationContainer = document.createElement("div");
+    formationContainer.className = "formation-container";
 
-      let top,midL,midR,bottom;
+    // Formation layout
+    const formationLayout = document.createElement("div");
+    formationLayout.className = "formation-layout";
 
-      if(goalieTop){
-
-        top=goalie;
-        midL=playersOnly[0];
-        midR=playersOnly[1];
-        bottom=playersOnly[2];
-
-      }else{
-
-        top=playersOnly[0];
-        midL=playersOnly[1];
-        midR=playersOnly[2];
-        bottom=goalie;
-
+    // Build rows dynamically
+    if (teamSize === 3) {
+      let top, midL, midR, bottom;
+      const goalieTop = i % 2 === 0;
+      if (goalieTop) {
+        top = goalie;
+        midL = playersOnly[0];
+        midR = playersOnly[1];
+        bottom = playersOnly[2];
+      } else {
+        top = playersOnly[0];
+        midL = playersOnly[1];
+        midR = playersOnly[2];
+        bottom = goalie;
       }
-
-      out.insertAdjacentHTML(
-        "beforeend",
-
-`
-<div class="team"
-style="--team-colour:${colour}">
-
-<div class="team-title">
-${displayName}
-</div>
-
-<div class="formation-container">
-
-<div class="formation-layout">
-
-${centeredRow(top)}
-
-${twoAcrossRow(midL,midR)}
-
-${centeredRow(bottom)}
-
-</div>
-
-<div class="subs-section ${subsVisible}">
-
-<div style="font-weight:bold;">
-Subs
-</div>
-
-${subs
-.map(
-s=>`<div class="sub-card">
-${formatPlayer(s)}
-</div>`
-)
-.join("")}
-
-</div>
-
-</div>
-
-</div>`
-
-);
-
-      return;
-
+      formationLayout.innerHTML = `
+        ${centeredRow(top)}
+        ${twoAcrossRow(midL, midR)}
+        ${centeredRow(bottom)}
+      `;
+    } else if (teamSize === 5) {
+      const p = [...playersOnly];
+      const g = goalie || "";
+      const goalieTop = i % 2 === 0;
+      formationLayout.innerHTML = goalieTop
+        ? `${centeredRow(g)}${twoAcrossRow(p[0], p[1])}${threeAcrossRow(p[2], p[3], p[4])}`
+        : `${threeAcrossRow(p[0], p[1], p[2])}${twoAcrossRow(p[3], p[4])}${centeredRow(g)}`;
     }
 
-    if(teamSize===5){
+    formationContainer.appendChild(formationLayout);
 
-      const p=[...playersOnly];
+    // Subs section
+    const subsDiv = document.createElement("div");
+    subsDiv.className = `subs-section ${subsVisible}`;
+    subsDiv.innerHTML = `<div style="font-weight:bold;">Subs</div>` + subs
+      .map(s => `<div class="sub-card">${formatPlayer(s)}</div>`)
+      .join("");
+    formationContainer.appendChild(subsDiv);
 
-      const g=goalie||"";
+    teamDiv.appendChild(formationContainer);
+    out.appendChild(teamDiv);
 
-      let layoutHtml=
-        goalieTop
-        ?
-
-`
-${centeredRow(g)}
-
-${twoAcrossRow(p[0],p[1])}
-
-${threeAcrossRow(
-p[2],
-p[3],
-p[4]
-)}
-`
-
-        :
-
-`
-${threeAcrossRow(
-p[0],
-p[1],
-p[2]
-)}
-
-${twoAcrossRow(p[3],p[4])}
-
-${centeredRow(g)}
-`;
-
-      out.insertAdjacentHTML(
-
-        "beforeend",
-
-`
-<div class="team"
-style="--team-colour:${colour}">
-
-<div class="team-title">
-${displayName}
-</div>
-
-<div class="formation-container">
-
-<div class="formation-layout">
-
-${layoutHtml}
-
-</div>
-
-<div class="subs-section ${subsVisible}">
-
-<div style="font-weight:bold;">
-Subs
-</div>
-
-${subs
-.map(
-s=>`<div class="sub-card">
-${formatPlayer(s)}
-</div>`
-)
-.join("")}
-
-</div>
-
-</div>
-
-</div>`
-
-);
-
-    }
+    injectShirtsIntoTeam(teamDiv);
 
   });
-
-  document
-    .querySelectorAll('.team')
-    .forEach(teamEl=>{
-
-      const teamColour=
-        teamEl
-        .style
-        .getPropertyValue('--team-colour')
-        ||'#3a52a3';
-
-      teamEl
-        .style
-        .setProperty(
-          '--team-colour',
-          teamColour.trim()
-        );
-
-      injectShirtsIntoTeam(teamEl);
-
-    });
-
 }
 
 /* remaining helpers unchanged */
