@@ -154,56 +154,56 @@ textarea { resize: none; min-height: 100px; }
 #pitch {
   position: relative;
   width: 100%;
-  height: 300px; /* fixed pitch height */
-  border-radius: 18px;
-  background-color: #ffffff;
+  height: 300px;
+  border-radius: 12px;
+  background-color: #3aa14f; /* green floorball pitch */
 
   /* ===== Background layers ===== */
   background-image:
     /* center line */
     linear-gradient(
       to bottom,
-      transparent 49.8%,
-      #555 50%,
-      transparent 50.2%
+      transparent 49.5%,
+      #fff 50%,
+      transparent 50.5%
     ),
 
-    /* center circle (smaller and centered properly) */
+    /* center circle */
     radial-gradient(
       circle at 50% 50%,
       transparent 0%,
-      transparent 7%,
-      #555 8%,
-      transparent 9%
+      transparent 12%,   /* inner radius */
+      #fff 13%,          /* circle line */
+      transparent 14%
+    ),
+
+    /* goal areas - top & bottom */
+    linear-gradient(
+      to bottom,
+      #e6f3ff 0%,
+      #e6f3ff 8%,
+      transparent 8%,
+      transparent 92%,
+      #e6f3ff 92%,
+      #e6f3ff 100%
     ),
 
     /* subtle floor texture */
     radial-gradient(
-      #f2f2f2 1px,
+      rgba(255,255,255,0.05) 1px,
       transparent 1px
     );
 
   /* ===== Background repeat & size ===== */
-  background-repeat: no-repeat, no-repeat, repeat;
+  background-repeat: no-repeat, no-repeat, no-repeat, repeat;
   background-size:
-    100% 100%,   /* center line */
-    100% 100%,   /* center circle scales properly */
-    42px 42px;   /* floor texture */
+    100% 100%,  /* center line */
+    100% 100%,  /* center circle */
+    100% 100%,  /* goal areas */
+    40px 40px;  /* floor texture */
 }
 
-    /* subtle floor texture */
-    radial-gradient(
-      #f2f2f2 1px,
-      transparent 1px
-    );
-
-  /* ===== Background repeat & size ===== */
-  background-repeat: no-repeat, no-repeat, repeat;
-  background-size:
-    100% 100%,   /* center line covers full pitch */
-    100% 100%,   /* center circle scales with pitch */
-    42px 42px;   /* floor texture tiling */
-}
+  
 
   
     .subs-section.visible { display:block; }
