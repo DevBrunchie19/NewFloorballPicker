@@ -1100,13 +1100,9 @@ function injectShirtsIntoTeam(teamEl){
 
 }
 
-function renderTeams(
-  teams,
-  teamSize,
-  subsPerTeam
-){
+function renderTeams(teams, teamSize, subsPerTeam) {
 
-  const teamNames=[
+  const teamNames = [
     "The Five-Hole Fiddlers",
     "Goal Diggers",
     "Ball Blazers",
@@ -1124,222 +1120,109 @@ function renderTeams(
 
   shuffle(teamNames);
 
- const out=document.getElementById("pitch");
+  const out = document.getElementById("pitch");
+  out.innerHTML = "";
 
-  out.innerHTML="";
+  teams.forEach((team, i) => {
 
-  teams.forEach((team,i)=>{
+    const displayName = teamNames[i % teamNames.length];
+    const colour = teamColourByIndex(i, teams.length);
+    const slideStart = i % 2 === 0 ? '-40px' : '40px'; // alternate top/bottom
 
-    const displayName=
-      teamNames[
-        i%teamNames.length
-      ];
-
-    let goalie=null;
-
-    let playersOnly=
-      team.slice();
-
-    if(
-      playersOnly[0] &&
-      playersOnly[0].includes("(G)")
-    ){
-
-      goalie=playersOnly[0];
-
-      playersOnly=
-        playersOnly.slice(1);
-
+    // determine goalie and players
+    let goalie = null;
+    let playersOnly = team.slice();
+    if(playersOnly[0] && playersOnly[0].includes("(G)")) {
+      goalie = playersOnly[0];
+      playersOnly = playersOnly.slice(1);
     }
 
-    const subs=
-      subsPerTeam[i]||[];
+    const subs = subsPerTeam[i] || [];
+    const subsVisible = subs.length > 0 ? "visible" : "";
 
-    const goalieTop=i%2===0;
-
-    const subsVisible=
-      subs.length>0
-      ?"visible":"";
-
-    const colour=
-      teamColourByIndex(
-        i,
-        teams.length
-      );
-
-    if(teamSize===3){
-
-      let top,midL,midR,bottom;
+    // BUILD LAYOUT HTML
+    let layoutHtml = '';
+    if(teamSize === 3) {
+      const goalieTop = i % 2 === 0;
+      let top, midL, midR, bottom;
 
       if(goalieTop){
-
-        top=goalie;
-        midL=playersOnly[0];
-        midR=playersOnly[1];
-        bottom=playersOnly[2];
-
-      }else{
-
-        top=playersOnly[0];
-        midL=playersOnly[1];
-        midR=playersOnly[2];
-        bottom=goalie;
-
+        top = goalie;
+        midL = playersOnly[0];
+        midR = playersOnly[1];
+        bottom = playersOnly[2];
+      } else {
+        top = playersOnly[0];
+        midL = playersOnly[1];
+        midR = playersOnly[2];
+        bottom = goalie;
       }
 
-      out.insertAdjacentHTML(
-        "beforeend",
+      layoutHtml = `
+        ${centeredRow(top)}
+        ${twoAcrossRow(midL, midR)}
+        ${centeredRow(bottom)}
+      `;
 
-`
- <div class="team" style="--team-colour:${colour}; --slide-start:${slideStart}">
-    <div class="team-title">${displayName}</div>
-    <div class="formation-container">
-      <div class="formation-layout">
+    } else if(teamSize === 5) {
+      const p = [...playersOnly];
+      const g = goalie || "";
+      const goalieTop = i % 2 === 0;
 
-${centeredRow(top)}
-
-${twoAcrossRow(midL,midR)}
-
-${centeredRow(bottom)}
-
-</div>
-
- <div class="subs-section ${subsVisible}">
-        <div style="font-weight:bold;">Subs</div>
-        ${subs.map(s=>`<div class="sub-card">${formatPlayer(s)}</div>`).join("")}
-      </div>
-    </div>
-
-</div>`
-
-);
-
-      return;
-
+      if(goalieTop){
+        layoutHtml = `
+          ${centeredRow(g)}
+          ${twoAcrossRow(p[0], p[1])}
+          ${threeAcrossRow(p[2], p[3], p[4])}
+        `;
+      } else {
+        layoutHtml = `
+          ${threeAcrossRow(p[0], p[1], p[2])}
+          ${twoAcrossRow(p[3], p[4])}
+          ${centeredRow(g)}
+        `;
+      }
     }
 
-    if(teamSize===5){
-
-      const p=[...playersOnly];
-
-      const g=goalie||"";
-
-      let layoutHtml=
-        goalieTop
-        ?
-
-`
-${centeredRow(g)}
-
-${twoAcrossRow(p[0],p[1])}
-
-${threeAcrossRow(
-p[2],
-p[3],
-p[4]
-)}
-`
-
-        :
-
-`
-${threeAcrossRow(
-p[0],
-p[1],
-p[2]
-)}
-
-${twoAcrossRow(p[3],p[4])}
-
-${centeredRow(g)}
-`;
-
-      out.insertAdjacentHTML(
-
-        "beforeend",
-
-`
-<div class="team"
-style="--team-colour:${colour}">
-
-<div class="team-title">
-${displayName}
-</div>
-
-<div class="formation-container">
-
-<div class="formation-layout">
-
-${layoutHtml}
-
-</div>
-
-<div class="subs-section ${subsVisible}">
-
-<div style="font-weight:bold;">
-Subs
-</div>
-
-${subs
-.map(
-s=>`<div class="sub-card">
-${formatPlayer(s)}
-</div>`
-)
-.join("")}
-
-</div>
-
-</div>
-
-</div>`
-
-);
-
-    }
+    // INSERT TEAM HTML
+    out.insertAdjacentHTML(
+      "beforeend",
+      `
+        <div class="team" style="--team-colour:${colour}; --slide-start:${slideStart}">
+          <div class="team-title">${displayName}</div>
+          <div class="formation-container">
+            <div class="formation-layout">
+              ${layoutHtml}
+            </div>
+            <div class="subs-section ${subsVisible}">
+              <div style="font-weight:bold;">Subs</div>
+              ${subs.map(s => `<div class="sub-card">${formatPlayer(s)}</div>`).join("")}
+            </div>
+          </div>
+        </div>
+      `
+    );
 
   });
 
-  document
-    .querySelectorAll('.team')
-    .forEach(teamEl=>{
+  // Animate teams and players after insertion
+  document.querySelectorAll('.team').forEach((teamEl, i) => {
+    const slideStart = i % 2 === 0 ? '-40px' : '40px';
+    teamEl.style.setProperty('--slide-start', slideStart);
 
-      const teamColour=
-        teamEl
-        .style
-        .getPropertyValue('--team-colour')
-        ||'#3a52a3';
+    // Slide in team
+    setTimeout(() => teamEl.classList.add('animate-in'), 50);
 
-      teamEl
-        .style
-        .setProperty(
-          '--team-colour',
-          teamColour.trim()
-        );
+    // Inject shirt SVGs
+    injectShirtsIntoTeam(teamEl);
 
-      injectShirtsIntoTeam(teamEl);
-
+    // Animate each player with stagger
+    const players = teamEl.querySelectorAll('.player-icon');
+    players.forEach((player, j) => {
+      setTimeout(() => player.classList.add('animate-in'), 200 + j * 150);
     });
-  // Animate the team sliding in first
-  setTimeout(() => {
-    teamEl.classList.add("animate-in");
-  }, 50);
-
-  // Determine slide direction for animation
-// Team 0 = top (-40px), Team 1 = bottom (+40px)
-const slideStart = i === 0 ? '-40px' : '40px';
-
-  // Animate each player in the team with stagger
-  const players = teamEl.querySelectorAll(".player-icon");
-  players.forEach((player, i) => {
-    setTimeout(() => {
-      player.classList.add("animate-in");
-    }, 200 + i * 150); // delay each player 150ms after the team
   });
-
-});
 }
-
 /* remaining helpers unchanged */
 
 function threeAcrossRow(l,m,r){
