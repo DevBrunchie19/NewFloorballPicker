@@ -155,49 +155,55 @@ textarea { resize: none; min-height: 100px; }
 #pitch {
   position: relative;
   width: 100%;
- height: 100%;
   border-radius: 12px;
   background-color: #2660d12b;
   overflow: hidden;
   border: 2px solid #142c5a;
 
+  display: flex;
+  flex-direction: column;
+
   /* ===== Background layers ===== */
   background-image:
-/* Center line */
+
+    /* Center line */
     linear-gradient(
       to bottom,
       transparent 49.7%,
       #fff 50%,
-      transparent 49.3%
+      transparent 50.3%
     ),
 
     /* Center circle */
     radial-gradient(
       circle at 50% 50%,
       transparent 0%,
-      transparent 4.8%, /* inner radius */
-      #fff 4%,        /* circle line */
+      transparent 4.8%,
+      #fff 5%,
       transparent 5.2%
     ),
 
-    
-
-
-    /* Rubber floor subtle texture */
+    /* subtle texture */
     radial-gradient(
       rgba(255,255,255,0.03) 1px,
       transparent 1px
     );
 
-  /* ===== Background repeat & size ===== */
-  background-repeat: no-repeat, no-repeat, no-repeat, repeat;
+  background-repeat: no-repeat, no-repeat, repeat;
   background-size:
-    100% 100%,  /* center line */
-    100% 100%,  /* center circle */
-    100% 100%,  /* goal areas */
-    20px 20px;  /* floor texture */
+    100% 100%,
+    100% 100%,
+    20px 20px;
 }
 
+/* NEW */
+.pitch-half{
+  flex:1;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:30px 0;
+}
 
   /* dont edit below */
     .subs-section.visible { display:block; }
@@ -991,9 +997,14 @@ function renderTeams(
 
   shuffle(teamNames);
 
- const out=document.getElementById("pitch");
+const out = document.getElementById("pitch");
 
-  out.innerHTML="";
+out.innerHTML = `
+  <div class="pitch-half"></div>
+  <div class="pitch-half"></div>
+`;
+
+const halves = out.querySelectorAll(".pitch-half");
 
   teams.forEach((team,i)=>{
 
@@ -1054,8 +1065,8 @@ function renderTeams(
 
       }
 
-      out.insertAdjacentHTML(
-        "beforeend",
+     halves[i].insertAdjacentHTML(
+  "beforeend",
 
 `
 <div class="team"
@@ -1139,9 +1150,8 @@ ${twoAcrossRow(p[3],p[4])}
 ${centeredRow(g)}
 `;
 
-      out.insertAdjacentHTML(
-
-        "beforeend",
+    halves[i].insertAdjacentHTML(
+  "beforeend",
 
 `
 <div class="team"
