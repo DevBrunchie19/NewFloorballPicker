@@ -377,7 +377,46 @@ textarea { resize: none; min-height: 100px; }
   }
 }
 
-  
+.team-header{
+
+  display:flex;
+
+  align-items:center;
+
+  gap:12px;
+
+  margin-bottom:10px;
+}
+
+.team-badge{
+
+  width:44px;
+
+  height:44px;
+
+  flex-shrink:0;
+
+  filter:
+    drop-shadow(0 6px 12px rgba(0,0,0,.4));
+}
+
+/* slight animation */
+
+.team-badge{
+
+  transform:scale(.85);
+
+  opacity:0;
+
+  transition:.4s ease;
+}
+
+.team.animate-in .team-badge{
+
+  transform:scale(1);
+
+  opacity:1;
+} 
 
   </style>
 </head>
@@ -1004,6 +1043,66 @@ pitch.innerHTML =
 
     }
 
+    function generateTeamBadge(teamName, colour){
+
+  const initials = teamName
+    .split(" ")
+    .map(w=>w[0])
+    .slice(0,2)
+    .join("")
+    .toUpperCase();
+
+  const svg = `
+  <svg viewBox="0 0 100 100" class="team-badge">
+
+    <!-- outer ring -->
+    <circle cx="50" cy="50" r="48"
+      fill="none"
+      stroke="${colour}"
+      stroke-width="4"/>
+
+    <!-- glow -->
+    <circle cx="50" cy="50" r="40"
+      fill="${colour}"
+      opacity=".15"/>
+
+    <!-- inner plate -->
+    <circle cx="50" cy="50" r="34"
+      fill="#0b1220"/>
+
+    <!-- floorball holes pattern -->
+    <g fill="${colour}" opacity=".18">
+
+      <circle cx="50" cy="30" r="2"/>
+      <circle cx="65" cy="40" r="2"/>
+      <circle cx="35" cy="40" r="2"/>
+
+      <circle cx="50" cy="70" r="2"/>
+      <circle cx="65" cy="60" r="2"/>
+      <circle cx="35" cy="60" r="2"/>
+
+    </g>
+
+    <!-- initials -->
+    <text
+      x="50"
+      y="56"
+      font-size="28"
+      font-family="Bebas Neue, sans-serif"
+      text-anchor="middle"
+      fill="${colour}"
+      font-weight="700">
+
+      ${initials}
+
+    </text>
+
+  </svg>
+  `;
+
+  return svg;
+}
+
     renderTeams(
       bestDraft.teams,
       teamSize,
@@ -1195,7 +1294,17 @@ function renderTeams(teams, teamSize, subsPerTeam) {
       "beforeend",
       `
         <div class="team" style="--team-colour:${colour}; --slide-start:${slideStart}">
-          <div class="team-title">${displayName}</div>
+         <div class="team-header">
+
+  ${generateTeamBadge(displayName, colour)}
+
+  <div class="team-title">
+
+    ${displayName}
+
+  </div>
+
+</div>
           <div class="formation-container">
             <div class="formation-layout">
               ${layoutHtml}
