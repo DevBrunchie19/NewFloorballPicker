@@ -1043,65 +1043,7 @@ pitch.innerHTML =
 
     }
 
-    function generateTeamBadge(teamName, colour){
-
-  const initials = teamName
-    .split(" ")
-    .map(w=>w[0])
-    .slice(0,2)
-    .join("")
-    .toUpperCase();
-
-  const svg = `
-  <svg viewBox="0 0 100 100" class="team-badge">
-
-    <!-- outer ring -->
-    <circle cx="50" cy="50" r="48"
-      fill="none"
-      stroke="${colour}"
-      stroke-width="4"/>
-
-    <!-- glow -->
-    <circle cx="50" cy="50" r="40"
-      fill="${colour}"
-      opacity=".15"/>
-
-    <!-- inner plate -->
-    <circle cx="50" cy="50" r="34"
-      fill="#0b1220"/>
-
-    <!-- floorball holes pattern -->
-    <g fill="${colour}" opacity=".18">
-
-      <circle cx="50" cy="30" r="2"/>
-      <circle cx="65" cy="40" r="2"/>
-      <circle cx="35" cy="40" r="2"/>
-
-      <circle cx="50" cy="70" r="2"/>
-      <circle cx="65" cy="60" r="2"/>
-      <circle cx="35" cy="60" r="2"/>
-
-    </g>
-
-    <!-- initials -->
-    <text
-      x="50"
-      y="56"
-      font-size="28"
-      font-family="Bebas Neue, sans-serif"
-      text-anchor="middle"
-      fill="${colour}"
-      font-weight="700">
-
-      ${initials}
-
-    </text>
-
-  </svg>
-  `;
-
-  return svg;
-}
+   
 
     renderTeams(
       bestDraft.teams,
@@ -1162,6 +1104,66 @@ function teamColourByIndex(index,totalTeams){
 
   return `hsl(${hue} 65% 48%)`;
 
+}
+
+ function generateTeamBadge(teamName, colour){
+
+  const initials = teamName
+    .split(" ")
+    .map(w=>w[0])
+    .slice(0,2)
+    .join("")
+    .toUpperCase();
+
+  const svg = `
+  <svg viewBox="0 0 100 100" class="team-badge">
+
+    <!-- outer ring -->
+    <circle cx="50" cy="50" r="48"
+      fill="none"
+      stroke="${colour}"
+      stroke-width="4"/>
+
+    <!-- glow -->
+    <circle cx="50" cy="50" r="40"
+      fill="${colour}"
+      opacity=".15"/>
+
+    <!-- inner plate -->
+    <circle cx="50" cy="50" r="34"
+      fill="#0b1220"/>
+
+    <!-- floorball holes pattern -->
+    <g fill="${colour}" opacity=".18">
+
+      <circle cx="50" cy="30" r="2"/>
+      <circle cx="65" cy="40" r="2"/>
+      <circle cx="35" cy="40" r="2"/>
+
+      <circle cx="50" cy="70" r="2"/>
+      <circle cx="65" cy="60" r="2"/>
+      <circle cx="35" cy="60" r="2"/>
+
+    </g>
+
+    <!-- initials -->
+    <text
+      x="50"
+      y="56"
+      font-size="28"
+      font-family="Bebas Neue, sans-serif"
+      text-anchor="middle"
+      fill="${colour}"
+      font-weight="700">
+
+      ${initials}
+
+    </text>
+
+  </svg>
+  `;
+
+  return svg;
 }
 
 /* rest unchanged */
